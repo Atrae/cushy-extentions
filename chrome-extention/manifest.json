@@ -1,0 +1,25 @@
+{
+  "name": "Cushy",
+  "version": "2.0",
+  "manifest_version": 2,
+  "description": "cushy job!",
+  "background": {
+    "scripts": ["background.js", "user.js"]
+  },
+  "icons": {
+    "16" : "images/GB-19.png",
+    "48" : "images/GB-48.png",
+    "128" : "images/GB-128.png"
+  },
+  "browser_action": {
+    "default_icon": "images/GB-19.png",
+    "default_title": "Cushy"
+  },
+  "permissions": [
+                   "webRequest",
+                   "webRequestBlocking",
+                   "*://*/*",
+                   "storage",
+                   "tabs"
+                 ]
+}
