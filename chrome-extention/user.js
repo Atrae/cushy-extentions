@@ -5,7 +5,7 @@ var User = function(){
       var password = password;
       $.ajax({
         method: "POST",
-        url : "http://133.242.16.11:3000/apis/login",
+        url : "http://localhost:3000/apis/login",
         data: { mail: mail, password: password },
         beforeSend: function(){
           if(funcOption && funcOption.beforeSendFunc()){

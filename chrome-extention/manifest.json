@@ -4,7 +4,7 @@
   "manifest_version": 2,
   "description": "cushy job!",
   "background": {
-    "scripts": ["background.js", "user.js"]
+    "page": "background.html"
   },
   "icons": {
     "16" : "images/GB-19.png",
@@ -15,11 +15,17 @@
     "default_icon": "images/GB-19.png",
     "default_title": "Cushy"
   },
+  "content_scripts": [{
+    "matches": ["http://*/*", "https://*/*"],
+    "js": ["jquery-2.1.1.min.js", "save_dialog.js", "local_data.js", "content_frame.js"],
+    "all_frames": true
+  }],
   "permissions": [
                    "webRequest",
                    "webRequestBlocking",
                    "*://*/*",
                    "storage",
-                   "tabs"
+                   "tabs",
+                   "cookies"
                  ]
 }
