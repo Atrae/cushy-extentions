@@ -28,14 +28,20 @@ User.prototype = {
           // login success
           $('#completeImage').show();
           // set local storage
-          chrome.storage.local.set({ userInfo: { 'userId': data['user_id'], 'mail': mail, 'password': password} });
+          var userInfo = {
+                           'userId': data['user_id'],
+                           'mail': mail,
+                           'password': password,
+                           'apiKey': data['api_key']
+                         }
+          chrome.storage.local.set( { 'userInfo': userInfo } );
+          // i wanna close popup here.
         }else{
           // login failed
           $('#errorNotification').show();
           $('#errorNotification').text('mail or password is wrong!');
           $('#loginBlock').show();
         }
-        //ログイン完了のアニメーション
       }
     }).fail(function(state){
       $('#loadingImage').hide();

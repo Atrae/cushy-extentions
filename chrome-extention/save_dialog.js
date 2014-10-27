@@ -26,13 +26,12 @@ saveDialog.prototype = {
     var loginId = tempData.loginId[0];
     var passwordElementName = tempData.passwordElementName;
     var password = tempData.password[0];
-
-    storageData = {}
+    storageData = {};
     storageData[url] = { 'loginElementName': loginElementName,
-                  'loginId': loginId,
-                  'passwordElementName': passwordElementName,
-                  'password': password
-                }
+                         'loginId': loginId,
+                         'passwordElementName': passwordElementName,
+                         'password': password
+                       }
     chrome.storage.local.set(storageData, function() {
           // Notify that we saved.
       if(chrome.extension.lastError !== undefined) {
@@ -42,25 +41,31 @@ saveDialog.prototype = {
       }
     });
 
-    $.ajax({
-      method: "post",
-      url : "http://133.242.16.11:3000/apis/accounts",
-      data: {
-              userId: '2', //認証方法は別途検討
-              loginId: loginId,
-              loginElementName: loginElementName,
-              password: password,
-              passwordElementName: passwordElementName,
-              url: url
-            },
-      beforesend: function(){
-      }
-    }).done(function(data ,status){
-      //成功のアニメーション
+    chrome.storage.local.get(['userInfo'], function(result) {
 
-    }).fail(function(state){
-      //失敗のアニメーション
+      $.ajax({
+        method: "post",
+        url : "http://localhost:3000/apis/accounts",
+        data: {
+                userId: result['userInfo'].userId, //認証方法は別途検討
+                loginId: loginId,
+                loginElementName: loginElementName,
+                password: password,
+                passwordElementName: passwordElementName,
+                url: url,
+                api_key: result['userInfo'].apiKey
+              },
+        beforesend: function(){
+        }
+      }).done(function(data ,status){
+        //成功のアニメーション
+
+      }).fail(function(state){
+        //失敗のアニメーション
+      });
+
     });
+    this.close();
   }
 }
 
