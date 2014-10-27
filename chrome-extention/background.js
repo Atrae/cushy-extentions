@@ -14,23 +14,22 @@ var callBackFunc = function(details) {
         split_form_data = formData.split(",");
         for(i in split_form_data){
           if(!password && split_form_data[i].match(/"(.+)?password(.)?"/)){ //pull out a password
-            var passwordFormId = String(split_form_data[i].match(/"(.+)?password(.)?":/)).replace(/:(.+)/, '').replace(/"/g, '');
+            var passwordFormId = replaceSymbol(String(split_form_data[i].match(/"(.+)?password(.)?":/)));
             password = details.requestBody['formData'][passwordFormId];
           }else if(!mail && split_form_data[i].match(/"(.+)?mail(.)?"/)){ //pull out a email
-            var mailId = String(split_form_data[i].match(/"(.+)?mail(.)?":/)).replace(/:(.+)/, '').replace(/"/g, '');
+            var mailId = replaceSymbol(String(split_form_data[i].match(/"(.+)?mail(.)?":/)));
             mail = details.requestBody['formData'][mailId];
           }else if(!userName && split_form_data[i].match(/"(.+)?user(.+)?"/)){ //pull out a userName
-            var userNameId = String(split_form_data[i].match(/"(.+)?user(.+)?":/)).replace(/:(.+)/, '').replace(/"/g, '');
+            var userNameId = replaceSymbol(String(split_form_data[i].match(/"(.+)?user(.+)?":/)));
             userName = details.requestBody['formData'][userNameId];
           }else if(!userName && split_form_data[i].match(/"(.+)?login(.+)?"/)){
-            var loginId = String(split_form_data[i].match(/"(.+)?login(.+)?":/)).replace(/:(.+)/, '').replace(/"/g, '');
+            var loginId = replaceSymbol(String(split_form_data[i].match(/"(.+)?login(.+)?":/)));
             if(userName === null || userName === ""){
               userName = details.requestBody['formData'][loginId];
             }
           }
         }
         // create_url
-        var domain = String(details.url).replace(/http(s)?:\/\//, "").split('/')[0];
       }
       if(password){
         tempData.password = password;
@@ -46,7 +45,7 @@ var callBackFunc = function(details) {
           tempData.loginId = userName;
           tempData.loginElementName = loginId;
         }
-        tempData.url = domain;
+        tempData.url = String(details.url).replace(/http(s)?:\/\//, "").split('/')[0];
         tempData.confirmFlg = true;
       }
     }
@@ -65,14 +64,14 @@ chrome.webRequest.onBeforeRequest.addListener(
 var openDialogFunc = function(tabId, changeInfo, tab){
   if(tab.status === "complete"){
     var url = tempData.url;
-    if(tab.url.match(url) && tempData.confirmFlg === true){
+    if(tempData.confirmFlg === true){
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
         chrome.storage.local.get(['userInfo'], function (result) {
           // already logined? or no login?
           if(result['userInfo'] && result['userInfo'].userId && result['userInfo'].password){
             chrome.storage.local.get([url], function (result) {
               if(result[url] && result[url].loginId === tempData.loginId[0]){
-                console.log('already created!');
+                // nothing
               }else{
                 chrome.tabs.sendMessage(tabs[0].id, {action: "openDialogBox", tempData: tempData}, function(response) {});
               }
@@ -149,3 +148,6 @@ function openAccountRegisterForm(){
   chrome.windows.create(windowParmas, function(){});
 }
 
+function replaceSymbol(str){
+  return str.replace(/:(.+)/, '').replace(/"/g, '');
+}
