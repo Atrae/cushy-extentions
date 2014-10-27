@@ -1,24 +1,33 @@
-var button = '<input type="submit" class="cushy-ext-submit-js" style="width: 70px; height: 25px; margin: 0;" value="登録する">';
 var saveDialog = new saveDialog();
 var localData = new localData();
 
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
   var tempData = msg.tempData;
-  console.dir(tempData);
-
-  if(msg.action === "open_dialog_box"){
+  if(msg.action === "openDialogBox"){
     var button = '<input type="submit" class="cushy-ext-submit-js" style="width: 70px; height: 25px; margin: 0;" value="登録する">';
     saveDialog.button = button;
     saveDialog.message = "登録しますか？"
     saveDialog.insert();
-
     $('input.cushy-ext-submit-js').click(function(){
       saveDialog.submit(msg.tempData);
     });
-  }else if(msg.action === "open_dialog_box_for_no_login"){
+  }else if(msg.action === "noLoginNotification"){
     saveDialog.message = "現在未ログインのようです。ログインしていただかないとアカウントは登録されません。";
     saveDialog.button = '';
     saveDialog.insert();
+  }else if(msg.action === "fillAccount" ){
+    var loginElementName = 'input[name="'+ msg.accountData.loginElementName + '"]';
+    var passwordElementName = 'input[name="'+ msg.accountData.passwordElementName + '"]';
+    if($(document).find(passwordElementName).length > 0){
+      saveDialog.message = "以前登録したアカウントでloginしますか？";
+      saveDialog.button = '<input type="submit" class="cushy_ext_login-js" style="width: 70px; height: 25px; margin: 0;" value="ログインする">';
+      saveDialog.insert();
+
+      $('input.cushy_ext_login-js').click(function(){
+        $(document).find(passwordElementName).val(msg.accountData.password);
+        $(document).find(loginElementName).val(msg.accountData.loginId);
+      });
+    }
   }
 
   $('button.cushy-ext-close-js').click(function(){

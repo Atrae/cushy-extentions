@@ -62,30 +62,45 @@ chrome.webRequest.onBeforeRequest.addListener(
   ['requestBody']
 );
 
-var sendMessage = function(tabId, changeInfo, tab){
+var openDialogFunc = function(tabId, changeInfo, tab){
   if(tab.status === "complete"){
     var url = tempData.url;
     if(tab.url.match(url) && tempData.confirmFlg === true){
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
         chrome.storage.local.get(['userInfo'], function (result) {
-          //ログイン時と未ログイン時で切り分け
+          // already logined? or no login?
           if(result['userInfo'] && result['userInfo'].userId && result['userInfo'].password){
             chrome.storage.local.get([url], function (result) {
               if(result[url] && result[url].loginId === tempData.loginId[0]){
                 console.log('already created!');
               }else{
-                chrome.tabs.sendMessage(tabs[0].id, {action: "open_dialog_box", tempData: tempData}, function(response) {});
+                chrome.tabs.sendMessage(tabs[0].id, {action: "openDialogBox", tempData: tempData}, function(response) {});
               }
             });
           }else{
-            chrome.tabs.sendMessage(tabs[0].id, {action: "open_dialog_box_for_no_login", tempData: tempData}, function(response) {});
+            chrome.tabs.sendMessage(tabs[0].id, {action: "noLoginNotification", tempData: tempData}, function(response) {});
           }
         });
       });
     }
   };
 }
-chrome.tabs.onUpdated.addListener(sendMessage);
+chrome.tabs.onUpdated.addListener(openDialogFunc);
+
+var fillAccountFunc = function(tabId, changeInfo, tab){
+  if(tab.status === "complete"){
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+      var url = String(tab.url).replace(/http(s)?:\/\//, "").split('/')[0];
+      chrome.storage.local.get([url], function (result) {
+        if(result[url]){
+          chrome.tabs.sendMessage(tabs[0].id, {action: "fillAccount", accountData: result[url]}, function(response) {});
+        }
+      });
+    });
+  };
+}
+chrome.tabs.onUpdated.addListener(fillAccountFunc);
+
 
 var receiveMessage = function(request,sender,sendResponse){
   if(request.action === "dialog_close"){
@@ -96,8 +111,8 @@ var receiveMessage = function(request,sender,sendResponse){
 chrome.runtime.onMessage.addListener(receiveMessage);
 
 function popUploginCheck(){
-  //this is witten login judge logic.
-  //you can deal with storage data only in the callback.
+  // this is witten login judge logic.
+  // you can deal with storage data only in the callback.
   // i wanna gather into the login logic.
   chrome.storage.local.get(['userInfo'], function (result) {
     if(result['userInfo'] && result['userInfo'].userId && result['userInfo'].password){
