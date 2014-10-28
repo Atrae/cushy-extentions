@@ -7,6 +7,7 @@ var tempStorageData = function(formData, loginElementName, loginId, passwordElem
   this.userName = null;
   this.formData = formData;
   this.confirmFlg = false;
+  this.tabId = null;
 };
 
 tempStorageData.prototype = {

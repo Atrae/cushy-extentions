@@ -2,14 +2,12 @@ var saveDialog = new saveDialog();
 var localData = new localData();
 
 //chrome.storage.local.clear(function(){ });
-
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
   var tempData = msg.tempData;
   if(msg.action === "openDialogBox"){
     // open dialog box
-    var button = '<input type="submit" class="cushy-ext-submit-js" style="width: 70px; height: 25px; margin: 0;" value="登録する">';
-    saveDialog.button = button;
-    saveDialog.message = "登録しますか？"
+    saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 70px; height: 25px; margin: 0;" value="登録する">';
+    saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントを登録しますか？"
     saveDialog.insert();
     $('input.cushy-ext-submit-js').click(function(){
       saveDialog.submit(msg.tempData);

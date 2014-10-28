@@ -47,6 +47,9 @@ var callBackFunc = function(details) {
         }
         tempData.url = String(details.url).replace(/http(s)?:\/\//, "").split('/')[0];
         tempData.confirmFlg = true;
+        chrome.tabs.query({ active:true,windowType:"normal", currentWindow: true},
+          function(d){ tempData.tabId= d[0].id; }
+        );
       }
     }
   }
@@ -61,14 +64,17 @@ chrome.webRequest.onBeforeRequest.addListener(
   ['requestBody']
 );
 
+// open dialog logic
 var openDialogFunc = function(tabId, changeInfo, tab){
   if(tab.status === "complete"){
-    if(tempData.confirmFlg === true){
-      var url = tempData.url.replace('www.','');
+    if(tempData && tempData.confirmFlg === true && tempData.tabId === tabId ){
+      var url = tempData.url;
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
         chrome.storage.local.get(['userInfo'], function (result) {
           // already logined? or no login?
-          if(result['userInfo'] && result['userInfo'].userId && result['userInfo'].password){
+          var userInfo = result['userInfo'];
+          if(userInfo && userInfo.userId && userInfo.password){
+            // already logined
             chrome.storage.local.get([url], function (result) {
               if(result[url] && result[url].loginId === tempData.loginId[0]){
                 // nothing
