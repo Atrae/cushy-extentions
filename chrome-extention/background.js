@@ -63,8 +63,8 @@ chrome.webRequest.onBeforeRequest.addListener(
 
 var openDialogFunc = function(tabId, changeInfo, tab){
   if(tab.status === "complete"){
-    var url = tempData.url;
     if(tempData.confirmFlg === true){
+      var url = tempData.url.replace('www.','');
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
         chrome.storage.local.get(['userInfo'], function (result) {
           // already logined? or no login?
