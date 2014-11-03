@@ -1,16 +1,19 @@
-var tempStorageData = function(formData, loginElementName, loginId, passwordElementName, password, url){
-  this.loginId = loginId;
-  this.loginElementName = loginElementName;
-  this.password = password;
-  this.passwordElementName = passwordElementName;
-  this.url = url;
-  this.userName = null;
-  this.formData = formData;
+var TempStorageData = function(){
+  this.loginId;
+  this.loginElementName;
+  this.password;
+  this.passwordElementName;
+  this.url;
+  this.mail;
+  this.userName;
+  this.userNameElementName;
+  this.formData;
   this.confirmFlg = false;
-  this.tabId = null;
+  this.tabId;
+  this.type;
 };
 
-tempStorageData.prototype = {
+TempStorageData.prototype = {
   save: function(){
     chrome.storage.local.set({ 'loginElementName': this.loginElementName, 'loginId': this.loginId, 'passwordElementName': this.passwordElementName, 'password': this.password, 'url': this.url }, function() {
           // Notify that we saved.

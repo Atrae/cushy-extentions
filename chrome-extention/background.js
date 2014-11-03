@@ -2,54 +2,66 @@ chrome.browserAction.onClicked.addListener(function(tab){
   popUploginCheck();
 });
 
-var tempData = new tempStorageData();
+var tempData = new TempStorageData();
+
+var requestTypeMessage = function(request,sender,sendResponse){
+  if(request.action === 'signIn'){
+    tempData.type = 'signIn';
+  }else if(request.action === 'signUp'){
+    tempData.type = 'signUp';
+  }else{
+    tempData.type = null;
+  }
+}
+chrome.runtime.onMessage.addListener(requestTypeMessage);
 
 var callBackFunc = function(details) {
   if (details.method === "POST") {
-    var mail, password, userName, domain;
     var formData = JSON.stringify(details.requestBody['formData']);
     //if formData have a password, it is regarded as a sing in or sing up function.
     if(formData){
-      if(formData.match(/password/i)){
+      var mail, password, userName, domain, userId, passwordFormId, mailId, nameId, loginId;
+      if(tempData.type === 'signIn' || tempData.type === 'signUp' || formData.match(/password/i)) {
         split_form_data = formData.split(",");
         for(i in split_form_data){
           if(!password && split_form_data[i].match(/"(.+)?password(.)?"/)){ //pull out a password
-            var passwordFormId = replaceSymbol(String(split_form_data[i].match(/"(.+)?password(.)?":/)));
+            passwordFormId = replaceSymbol(String(split_form_data[i].match(/"(.+)?password(.)?":/)));
             password = details.requestBody['formData'][passwordFormId];
-          }else if(!mail && split_form_data[i].match(/"(.+)?mail(.)?"/)){ //pull out a email
-            var mailId = replaceSymbol(String(split_form_data[i].match(/"(.+)?mail(.)?":/)));
-            mail = details.requestBody['formData'][mailId];
-          }else if(!userName && split_form_data[i].match(/"(.+)?user(.+)?"/)){ //pull out a userName
-            var userNameId = replaceSymbol(String(split_form_data[i].match(/"(.+)?user(.+)?":/)));
-            userName = details.requestBody['formData'][userNameId];
-          }else if(!userName && split_form_data[i].match(/"(.+)?login(.+)?"/)){
-            var loginId = replaceSymbol(String(split_form_data[i].match(/"(.+)?login(.+)?":/)));
-            if(userName === null || userName === ""){
-              userName = details.requestBody['formData'][loginId];
-            }
+          }else if(split_form_data[i].match(/"(.+)?mail(.)?"/)){ //pull out a email
+            mailId = replaceSymbol(String(split_form_data[i].match(/"(.+)?mail(.)?":/)));
+          }else if(split_form_data[i].match(/"(.+)?user(.+)?id(.)?"/)){ //pull out a userName
+            userId = replaceSymbol(String(split_form_data[i].match(/"(.+)?user(.+)?id(.)?":/)));
+          }else if(split_form_data[i].match(/"(.+)?name(.+)?"/)){ //pull out a userName
+            nameId = replaceSymbol(String(split_form_data[i].match(/"(.+)?name(.+)?":/)));
+          }else if(split_form_data[i].match(/"(.+)?login(.+)?"/)){
+            loginId = replaceSymbol(String(split_form_data[i].match(/"(.+)?login(.+)?":/)));
           }
         }
-        // create_url
-      }
-      if(password){
-        tempData.password = password;
-        tempData.passwordElementName = passwordFormId;
-        //loginidは以下のロジックで決定する
-        if(mail){
-          tempData.loginId = mail;
+        //set password
+        if(password){
+          tempData.password = password;
+          tempData.passwordElementName = passwordFormId;
+        }
+          //loginidは以下のロジックで決定する
+        if(mailId){
+          tempData.loginId = details.requestBody['formData'][mailId];
           tempData.loginElementName = mailId;
-        }else if(userNameId){
-          tempData.loginId= userName;
-          tempData.loginElementName = userNameId;
+        }else if(userId){
+          tempData.loginId = details.requestBody['formData'][userId];
+          tempData.loginElementName = userId;
         }else if(loginId){
-          tempData.loginId = userName;
+          tempData.loginId = details.requestBody['formData'][loginId];
           tempData.loginElementName = loginId;
+        }else if(nameId){
+          tempData.loginId = details.requestBody['formData'][nameId];
+          tempData.loginElementName = nameId;
         }
         tempData.url = String(details.url).replace(/http(s)?:\/\//, "").split('/')[0];
         tempData.confirmFlg = true;
         chrome.tabs.query({ active:true,windowType:"normal", currentWindow: true},
-          function(d){ tempData.tabId= d[0].id; }
+          function(d){ if(d[0]){ tempData.tabId= d[0].id; } }
         );
+        console.dir(tempData);
       }
     }
   }
@@ -67,7 +79,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 // open dialog logic
 var openDialogFunc = function(tabId, changeInfo, tab){
   if(tab.status === "complete"){
-    if(tempData && tempData.confirmFlg === true && tempData.tabId === tabId ){
+    if(tempData && tempData.confirmFlg === true && tempData.tabId === tabId && (tempData.password != '' && tempData.password != null ){
       var url = tempData.url;
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
         chrome.storage.local.get(['userInfo'], function (result) {
@@ -106,14 +118,12 @@ var fillAccountFunc = function(tabId, changeInfo, tab){
 }
 chrome.tabs.onUpdated.addListener(fillAccountFunc);
 
-
-var receiveMessage = function(request,sender,sendResponse){
+var dialogMessage = function(request,sender,sendResponse){
   if(request.action === "dialog_close"){
     tempData.confirmFlg = false;
-  }else if(request.action === "login"){
   }
 }
-chrome.runtime.onMessage.addListener(receiveMessage);
+chrome.runtime.onMessage.addListener(dialogMessage);
 
 function popUploginCheck(){
   // this is witten login judge logic.
