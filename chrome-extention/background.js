@@ -49,12 +49,12 @@ var callBackFunc = function(details) {
         }else if(userId){
           tempData.loginId = details.requestBody['formData'][userId];
           tempData.loginElementName = userId;
-        }else if(loginId){
-          tempData.loginId = details.requestBody['formData'][loginId];
-          tempData.loginElementName = loginId;
         }else if(nameId){
           tempData.loginId = details.requestBody['formData'][nameId];
           tempData.loginElementName = nameId;
+        }else if(loginId){
+          tempData.loginId = details.requestBody['formData'][loginId];
+          tempData.loginElementName = loginId;
         }
         tempData.url = String(details.url).replace(/http(s)?:\/\//, "").split('/')[0];
         tempData.confirmFlg = true;
@@ -79,7 +79,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 // open dialog logic
 var openDialogFunc = function(tabId, changeInfo, tab){
   if(tab.status === "complete"){
-    if(tempData && tempData.confirmFlg === true && tempData.tabId === tabId && (tempData.password != '' && tempData.password != null ){
+    if(tempData && tempData.confirmFlg === true && tempData.tabId === tabId && (tempData.password != '' && tempData.password != null)){
       var url = tempData.url;
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
         chrome.storage.local.get(['userInfo'], function (result) {
@@ -88,19 +88,35 @@ var openDialogFunc = function(tabId, changeInfo, tab){
           if(userInfo && userInfo.userId && userInfo.password){
             // already logined
             chrome.storage.local.get([url], function (result) {
-              if(result[url] && result[url].loginId === tempData.loginId[0]){
-                // nothing
+              var accountInfos = result[url];
+              if(accountInfos){
+                var dialogType = 'openDialogBox'; // 1 is openDialogBox, 2 is confirmChangePasswordBox, 3 is nothing
+                for(i in accountInfos){
+                  if(accountInfos[i] && accountInfos[i].loginId === tempData.loginId[0]){
+                    if(accountInfos[i].password === tempData.password[0]){
+                      dialogType = 'nothing';
+                    }else{
+                      dialogType = 'confirmChangePasswordBox';
+                    }
+                    break;
+                  }
+                }
+                if(dialogType === 'openDialogBox'){
+                  chrome.tabs.sendMessage(tabs[0].id, {action: "openDialogBox", tempData: tempData}, function(response){});
+                }else if(dialogType === 'confirmChangePasswordBox'){
+                  chrome.tabs.sendMessage(tabs[0].id, {action: "confirmChangePasswordBox", tempData: tempData}, function(response){});
+                }
               }else{
-                chrome.tabs.sendMessage(tabs[0].id, {action: "openDialogBox", tempData: tempData}, function(response) {});
+                chrome.tabs.sendMessage(tabs[0].id, {action: "openDialogBox", tempData: tempData}, function(response){});
               }
             });
           }else{
-            chrome.tabs.sendMessage(tabs[0].id, {action: "noLoginNotification", tempData: tempData}, function(response) {});
+            chrome.tabs.sendMessage(tabs[0].id, {action: "noLoginNotification", tempData: tempData}, function(response){});
           }
         });
       });
     }
-  };
+  }
 }
 chrome.tabs.onUpdated.addListener(openDialogFunc);
 
