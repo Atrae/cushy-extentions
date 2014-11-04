@@ -10,7 +10,16 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントを登録しますか？"
     saveDialog.insert();
     $('input.cushy-ext-submit-js').click(function(){
-      saveDialog.submit(msg.tempData);
+      saveDialog.submit(msg.tempData, 'save');
+      chrome.runtime.sendMessage({action: "dialog_close"}, function(){});
+    });
+  }else if(msg.action === "confirmChangePasswordBox"){
+    // open dialog box
+    saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 70px; height: 25px; margin: 0;" value="変更する">';
+    saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントのPWを変更しますか？"
+    saveDialog.insert();
+    $('input.cushy-ext-submit-js').click(function(){
+      saveDialog.submit(msg.tempData, 'changePassword');
       chrome.runtime.sendMessage({action: "dialog_close"}, function(){});
     });
   }else if(msg.action === "noLoginNotification"){
@@ -49,7 +58,6 @@ $(function(){
     if(form.type === "signUp"){
       setRandomPassword(form);
     }
-    console.dir(form);
   });
 
   $(document).on('submit', 'form', function(){

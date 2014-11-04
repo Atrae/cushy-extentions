@@ -19,30 +19,46 @@ saveDialog.prototype = {
     }, 1000, function() {
     });
   },
-  submit: function(tempData){
+  submit: function(tempData, submitType){
     //localへの保存 + サーバへの保存
     var url = tempData.url;
     var loginElementName = tempData.loginElementName;
     var loginId = tempData.loginId[0];
     var passwordElementName = tempData.passwordElementName;
     var password = tempData.password[0];
-    storageData = {};
-    storageData[url] = { 'loginElementName': loginElementName,
-                         'loginId': loginId,
-                         'passwordElementName': passwordElementName,
-                         'password': password
-                       }
-    chrome.storage.local.set(storageData, function() {
-          // Notify that we saved.
-      if(chrome.extension.lastError !== undefined) {
-        console.log('failed');
-      }else{
-        console.log('ok!save');
+    var storageData = {};
+    chrome.storage.local.get([url], function (result){
+      var accountInfos = result[url];
+      if(accountInfos === undefined || accountInfos === null){
+        accountInfos = [];
       }
+      if(submitType === 'save'){ //save ver.
+        accountInfos.push({
+                            'loginElementName': loginElementName,
+                            'loginId': loginId,
+                            'passwordElementName': passwordElementName,
+                            'password': password
+                         })
+      }else if(submitType === 'changePassword'){
+        for(i in accountInfos){
+          if(loginId === accountInfos[i].loginId){
+            accountInfos[i].password = password;
+            accountInfos[i].passwordElementName = passwordElementName;
+          }
+        }
+      }
+      storageData[url] = accountInfos;
+      chrome.storage.local.set(storageData, function(result){
+        // Notify that we saved.
+        if(chrome.extension.lastError !== undefined) {
+          console.log('failed');
+        }else{
+          console.log('ok!save');
+        }
+      });
     });
 
-    chrome.storage.local.get(['userInfo'], function(result) {
-
+    chrome.storage.local.get(['userInfo'], function(result){
       $.ajax({
         method: "post",
         url : "http://localhost:3000/apis/accounts",
@@ -63,7 +79,6 @@ saveDialog.prototype = {
       }).fail(function(state){
         //失敗のアニメーション
       });
-
     });
     this.close();
   }
