@@ -8,6 +8,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     // open dialog box
     saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 70px; height: 25px; margin: 0;" value="登録する">';
     saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントを登録しますか？"
+    saveDialog.select_options = '';
     saveDialog.insert();
     $('input.cushy-ext-submit-js').click(function(){
       saveDialog.submit(msg.tempData, 'save');
@@ -17,6 +18,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     // open dialog box
     saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 70px; height: 25px; margin: 0;" value="変更する">';
     saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントのPWを変更しますか？"
+    saveDialog.select_options = '';
     saveDialog.insert();
     $('input.cushy-ext-submit-js').click(function(){
       saveDialog.submit(msg.tempData, 'changePassword');
@@ -26,18 +28,25 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     // prompt login
     saveDialog.message = "現在未ログインのようです。ログインしていただかないとアカウントは登録されません。";
     saveDialog.button = '';
+    saveDialog.select_options = '';
     saveDialog.insert();
   }else if(msg.action === "fillAccount" ){
     // fill account
-    var loginElementName = 'input[name="'+ msg.accountData.loginElementName + '"]';
-    var passwordElementName = 'input[name="'+ msg.accountData.passwordElementName + '"]';
+    var loginElementName = 'input[name="'+ msg.accountData[0].loginElementName +'"]';
+    var passwordElementName = 'input[name="'+ msg.accountData[0].passwordElementName +'"]';
+    saveDialog.select_options = "";
+    for(i in msg.accountData){
+      saveDialog.select_options += "<option login-id='"+i+"'>"+ msg.accountData[i].loginId +"</option>"
+    }
+
     if($(document).find(passwordElementName).length > 0){
       saveDialog.message = "以前登録したアカウントでloginしますか？";
       saveDialog.button = '<input type="submit" class="cushy_ext_login-js" style="width: 70px; height: 25px; margin: 0;" value="ログインする">';
       saveDialog.insert();
       $('input.cushy_ext_login-js').click(function(){
-        $(document).find(passwordElementName).val(msg.accountData.password);
-        $(document).find(loginElementName).val(msg.accountData.loginId);
+        var account =  msg.accountData[$('select#loginIdSelect').find('option:selected').attr('login-id')];
+        $(document).find(passwordElementName).val(account.password);
+        $(document).find(loginElementName).val(account.loginId);
         $(document).find(loginElementName).closest('form').find('input[type="submit"]').click();
       });
     }
@@ -62,13 +71,13 @@ $(function(){
 
   $(document).on('submit', 'form', function(){
     var index = $('form').index($(this));
-    chrome.runtime.sendMessage({ action: forms[index].type }, function(){ });
+    chrome.runtime.sendMessage({ action: forms[index].type, passwordElementName: forms[index].passwordElementName, loginIdElementName: forms[index].loginIdElementName }, function(){ });
   });
 
   $('a').on('click', function(){
     if($(this).closest('form').length > 0){
       var index = $('form').index($(this).closest('form'));
-      chrome.runtime.sendMessage({ action: forms[index].type }, function(){ });
+      chrome.runtime.sendMessage({ action: forms[index].type, passwordElementName: forms[index].passwordElementName, loginIdElementName: forms[index].loginIdElementName }, function(){ });
     }
   });
 });
