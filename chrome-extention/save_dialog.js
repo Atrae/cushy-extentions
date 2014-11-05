@@ -6,7 +6,14 @@ var saveDialog = function(message, button, select_options){
 
 saveDialog.prototype = {
   insert: function(){
-    $('body').append('<div id="cushy-ext-dialog" style="width: 100%; position: fixed; top: 0px; height: 0px; background-color: #fdf0bc;"><p style="float: left;">'+ this.message + '</p><div class="cushy-ext-dialog-js">'+ this.button +'<button class="cushy-ext-close-js">×</button></div></div>');
+    var html = '<div id="cushy-ext-dialog" style="width: 100%; position: fixed; top: 0px; height: 0px; background-color: #fdf0bc;">';
+    html += '<p style="float: left;">'+ this.message + '</p>';
+    if(this.select_options){
+      html += '<select id="loginIdSelect">' + this.select_options +'</select>';
+    }
+    html += '<div class="cushy-ext-dialog-js">'+ this.button +'<button class="cushy-ext-close-js">close</button></div>';
+    html += '</div>';
+    $('body').append(html);
     $('#cushy-ext-dialog').animate({
       height: '30px'
     }, 500, function() {

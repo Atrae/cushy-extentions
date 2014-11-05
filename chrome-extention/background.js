@@ -7,6 +7,8 @@ var tempData = new TempStorageData();
 var requestTypeMessage = function(request,sender,sendResponse){
   if(request.action === 'signIn'){
     tempData.type = 'signIn';
+    tempData.loginElementName = request.loginIdElementName;
+    tempData.passwordElementName = request.passwordElementName;
   }else if(request.action === 'signUp'){
     tempData.type = 'signUp';
   }else{
@@ -21,7 +23,17 @@ var callBackFunc = function(details) {
     //if formData have a password, it is regarded as a sing in or sing up function.
     if(formData){
       var mail, password, userName, domain, userId, passwordFormId, mailId, nameId, loginId;
-      if(tempData.type === 'signIn' || tempData.type === 'signUp' || formData.match(/password/i)) {
+      // sign up ver.
+      if(tempData.type === 'signIn'){
+        if(tempData.loginElementName){
+          tempData.loginId = details.requestBody['formData'][tempData.loginElementName];
+        }
+        if(tempData.passwordElementName){
+          tempData.password = details.requestBody['formData'][tempData.passwordElementName];
+        }
+      }
+      // sign in ver.
+      if(tempData.type === 'signUp' || (tempData.type != 'signIn' && formData.match(/password/i))) {
         split_form_data = formData.split(",");
         for(i in split_form_data){
           if(!password && split_form_data[i].match(/"(.+)?password(.)?"/)){ //pull out a password
@@ -56,13 +68,15 @@ var callBackFunc = function(details) {
           tempData.loginId = details.requestBody['formData'][loginId];
           tempData.loginElementName = loginId;
         }
+      }
+      if(tempData.type === 'signIn' || tempData.type === 'signUp'){
         tempData.url = String(details.url).replace(/http(s)?:\/\//, "").split('/')[0];
         tempData.confirmFlg = true;
         chrome.tabs.query({ active:true,windowType:"normal", currentWindow: true},
           function(d){ if(d[0]){ tempData.tabId= d[0].id; } }
         );
-        console.dir(tempData);
       }
+      console.dir(tempData);
     }
   }
 }

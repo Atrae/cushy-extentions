@@ -15,12 +15,12 @@ Form.prototype = {
     this.setUrl();
     this.setSubmitBtn();
     if(this.submitBtn){
-      //this.setSubmitBtnText();
       this.setElementStr();
       this.checkType();
     }
     if(this.type === "signIn" || this.type === "signUp"){
       this.setPasswordField();
+      this.setLoginIdField();
     }
   },
   setUrl: function(){
@@ -113,31 +113,39 @@ Form.prototype = {
       }
     }
   },
-  setFormValue: function(){
-    var forecastNames = ["mail", "user", "login"];
-    var passwordField = this.formData.find('[type="password"]');
+  setLoginIdField: function(){
     var mailField = this.formData.find('[type="email"]');
-    var textField = this.formData.find('input[type="text"]');
-
-    if(passwordField.length > 0){
-      this.passwordElementName = passwordField.attr('name');
-    }
+    var textField = this.formData.find('[type="text"]');
 
     //loginIdElementNameに関しては少しロジックを入れる予定
     if(mailField.length > 0){
       this.loginIdElementName = mailField.attr('name');
     }else if(textField.length > 0){
-      for(var i=0; i < forecastNames.length; i++){
-        re = new RegExp("(.+)?"+forecastNames[i]+"(.)?", "i");
-        for(var i=0; i < textField.length; i++){
-          if(textField[i].name.match(re)){
-            this.loginIdElementName = textField[i].name;
-            break;
-          }
+      var mailId, userId, nameId, loginId;
+      for(var i=0; i < textField.length; i++){
+        var elementStr = "";
+        elementStr += textField[i].name;
+        elementStr += textField[i].id;
+        elementStr += textField[i].className;
+
+        if(elementStr.match(/(.+)?mail(.)?/)){
+          mailId = textField[i].name;
+        }else if(elementStr.match(/(.+)?user(.+)?id(.)?/)){
+          userId = textField[i].name;
+        }else if(elementStr.match(/(.+)?name(.+)?/)){
+          nameId = textField[i].name;
+        }else if(elementStr.match(/(.+)?login(.+)?/)){
+          loginId = textField[i].name;
         }
-        if(this.loginIdElementName){
-          break;
-        }
+      }
+      if(mailId){
+        this.loginIdElementName = mailId;
+      }else if(userId){
+        this.loginIdElementName = userId;
+      }else if(nameId){
+        this.loginIdElementName = nameId;
+      }else if(loginId){
+        this.loginIdElementName = loginId;
       }
     }
   }
