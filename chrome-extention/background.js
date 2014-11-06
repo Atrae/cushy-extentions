@@ -161,7 +161,9 @@ function popUploginCheck(){
   // i wanna gather into the login logic.
   chrome.storage.local.get(['userInfo'], function (result) {
     if(result['userInfo'] && result['userInfo'].userId && result['userInfo'].password){
-      openAccountRegisterForm();
+      chrome.browserAction.setPopup({
+        popup: 'popup.html'
+      });
     }else{
       openLoginForm();
     }

@@ -44,7 +44,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
       saveDialog.button = '<input type="submit" class="cushy_ext_login-js" style="width: 70px; height: 25px; margin: 0;" value="ログインする">';
       saveDialog.insert();
       $('input.cushy_ext_login-js').click(function(){
-        var account =  msg.accountData[$('select#loginIdSelect').find('option:selected').attr('login-id')];
+        var account =  msg.accountData[$(this).closest('#cushy-ext-dialog').find('select#loginIdSelect option:selected').attr('login-id')];
         $(document).find(passwordElementName).val(account.password);
         $(document).find(loginElementName).val(account.loginId);
         $(document).find(loginElementName).closest('form').find('input[type="submit"]').click();
