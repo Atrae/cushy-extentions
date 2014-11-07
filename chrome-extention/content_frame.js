@@ -6,7 +6,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
   var tempData = msg.tempData;
   if(msg.action === "openDialogBox"){
     // open dialog box
-    saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 70px; height: 25px; margin: 0;" value="登録する">';
+    saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="登録する">';
     saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントを登録しますか？"
     saveDialog.select_options = '';
     saveDialog.insert();
@@ -16,7 +16,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     });
   }else if(msg.action === "confirmChangePasswordBox"){
     // open dialog box
-    saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 70px; height: 25px; margin: 0;" value="変更する">';
+    saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="変更する">';
     saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントのPWを変更しますか？"
     saveDialog.select_options = '';
     saveDialog.insert();
