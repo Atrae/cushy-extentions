@@ -41,7 +41,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
     if($(document).find(passwordElementName).length > 0){
       saveDialog.message = "以前登録したアカウントでloginしますか？";
-      saveDialog.button = '<input type="submit" class="cushy_ext_login-js" style="width: 70px; height: 25px; margin: 0;" value="ログインする">';
+      saveDialog.button = '<input type="submit" class="cushy_ext_login-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="ログインする">';
       saveDialog.insert();
       $('input.cushy_ext_login-js').click(function(){
         var account =  msg.accountData[$(this).closest('#cushy-ext-dialog').find('select#loginIdSelect option:selected').attr('login-id')];
