@@ -3,12 +3,20 @@ chrome.browserAction.onClicked.addListener(function(tab){
 });
 
 var tempData = new TempStorageData();
+var client = new Client();
+
+var updateClientFunc = function(tabId, changeInfo, tab){
+  client.tabId = tabId;
+  client.url = String(tab.url).replace(/http(s)?:\/\//, "").split('/')[0];
+}
+chrome.tabs.onUpdated.addListener(updateClientFunc);
 
 var requestTypeMessage = function(request,sender,sendResponse){
   if(request.action === 'signIn'){
     tempData.type = 'signIn';
     tempData.loginElementName = request.loginIdElementName;
     tempData.passwordElementName = request.passwordElementName;
+    tempData.loginUrl = request.url;
   }else if(request.action === 'signUp'){
     tempData.type = 'signUp';
   }else{
@@ -18,12 +26,11 @@ var requestTypeMessage = function(request,sender,sendResponse){
 chrome.runtime.onMessage.addListener(requestTypeMessage);
 
 var callBackFunc = function(details) {
-  if (details.method === "POST") {
+  if(details.method === "POST" && details.requestBody['formData']){
     var formData = JSON.stringify(details.requestBody['formData']);
-    //if formData have a password, it is regarded as a sing in or sing up function.
-    if(formData){
+    re = new RegExp(client.url, "i");
+    if(details.url.match(re)){
       var mail, password, userName, domain, userId, passwordFormId, mailId, nameId, loginId;
-      // sign up ver.
       if(tempData.type === 'signIn'){
         if(tempData.loginElementName){
           tempData.loginId = details.requestBody['formData'][tempData.loginElementName];
@@ -32,7 +39,6 @@ var callBackFunc = function(details) {
           tempData.password = details.requestBody['formData'][tempData.passwordElementName];
         }
       }
-      // sign in ver.
       if(tempData.type === 'signUp' || (tempData.type != 'signIn' && formData.match(/password/i))) {
         split_form_data = formData.split(",");
         for(i in split_form_data){
@@ -54,7 +60,6 @@ var callBackFunc = function(details) {
           tempData.password = password;
           tempData.passwordElementName = passwordFormId;
         }
-          //loginidは以下のロジックで決定する
         if(mailId){
           tempData.loginId = details.requestBody['formData'][mailId];
           tempData.loginElementName = mailId;
@@ -69,15 +74,14 @@ var callBackFunc = function(details) {
           tempData.loginElementName = loginId;
         }
       }
-      if(tempData.type === 'signIn' || tempData.type === 'signUp'){
-        tempData.url = String(details.url).replace(/http(s)?:\/\//, "").split('/')[0];
+      if((tempData.type === 'signIn' || tempData.type === 'signUp') && tempData.password){
+        tempData.url = client.url;
+        tempData.tabId = client.tabId;
         tempData.confirmFlg = true;
-        chrome.tabs.query({ active:true,windowType:"normal", currentWindow: true},
-          function(d){ if(d[0]){ tempData.tabId= d[0].id; } }
-        );
       }
       console.dir(tempData);
     }
+
   }
 }
 
@@ -93,7 +97,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 // open dialog logic
 var openDialogFunc = function(tabId, changeInfo, tab){
   if(tab.status === "complete"){
-    if(tempData && tempData.confirmFlg === true && tempData.tabId === tabId && (tempData.password != '' && tempData.password != null)){
+    if(tempData && tempData.confirmFlg === true && tempData.tabId === tabId && (tempData.password != '' && tempData.password != null) && !client.openDialogFlg){
       var url = tempData.url;
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
         chrome.storage.local.get(['userInfo'], function (result) {
@@ -127,6 +131,7 @@ var openDialogFunc = function(tabId, changeInfo, tab){
           }else{
             chrome.tabs.sendMessage(tabs[0].id, {action: "noLoginNotification", tempData: tempData}, function(response){});
           }
+          client.toOpenDialog();
         });
       });
     }
@@ -151,6 +156,7 @@ chrome.tabs.onUpdated.addListener(fillAccountFunc);
 var dialogMessage = function(request,sender,sendResponse){
   if(request.action === "dialog_close"){
     tempData.confirmFlg = false;
+    client.toCloseDialog();
   }
 }
 chrome.runtime.onMessage.addListener(dialogMessage);

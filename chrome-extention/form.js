@@ -5,6 +5,7 @@ var Form = function(form){
   this.elementStr = '';
   this.type;
   this.setUrl;
+  this.url;
   this.loginIdElementName;
   this.passwordElementName;
   this.passwordConfirmElementName;
@@ -12,7 +13,6 @@ var Form = function(form){
 
 Form.prototype = {
   setInitValue: function(){
-    this.setUrl();
     this.setSubmitBtn();
     if(this.submitBtn){
       this.setElementStr();
@@ -22,9 +22,12 @@ Form.prototype = {
       this.setPasswordField();
       this.setLoginIdField();
     }
+    if(this.type === "signIn"){
+      this.setUrl();
+    }
   },
   setUrl: function(){
-    this.setUrl = this.formData.attr('action');
+    this.url = location.href;
   },
   setSubmitBtn: function(){
     if(this.formData.find('[type="submit"]').length > 0){

@@ -6,7 +6,7 @@ var saveDialog = function(message, button, select_options){
 
 saveDialog.prototype = {
   insert: function(){
-    var html = '<div id="cushy-ext-dialog" style="width: 100%; position: fixed; top: 0px; height: 0px; background-color: #fdf0bc;">';
+    var html = '<div id="cushy-ext-dialog" style="width: 100%; position: fixed; top: 0px; height: 0px; background-color: #fdf0bc; z-index: 100;">';
     html += '<p style="float: left;">'+ this.message + '</p>';
     if(this.select_options){
       html += '<select id="loginIdSelect">' + this.select_options +'</select>';
@@ -33,6 +33,7 @@ saveDialog.prototype = {
     var loginId = tempData.loginId[0];
     var passwordElementName = tempData.passwordElementName;
     var password = tempData.password[0];
+    var loginUrl = tempData.loginUrl;
     var storageData = {};
     chrome.storage.local.get([url], function (result){
       var accountInfos = result[url];
@@ -44,7 +45,8 @@ saveDialog.prototype = {
                             'loginElementName': loginElementName,
                             'loginId': loginId,
                             'passwordElementName': passwordElementName,
-                            'password': password
+                            'password': password,
+                            'loginUrl': loginUrl
                          })
       }else if(submitType === 'changePassword'){
         for(i in accountInfos){

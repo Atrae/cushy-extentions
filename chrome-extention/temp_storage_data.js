@@ -11,6 +11,7 @@ var TempStorageData = function(){
   this.confirmFlg = false;
   this.tabId;
   this.type;
+  this.loginUrl;
 };
 
 TempStorageData.prototype = {

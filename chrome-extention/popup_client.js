@@ -13,7 +13,7 @@ popupClient.prototype = {
           html += '<td class="url">' + url + '</td>'
           html += '<td class="loginId">' + accounts[i].loginId + '</td>'
           //html += '<td><button service-id="3" class="removeBtn">remove</button></td>'
-          html += '<td><button class="loginBtn" url="'+ url +'" >login</button></td>'
+          html += '<td><button class="loginBtn" url="'+ accounts[i].loginUrl +'" >login</button></td>'
           //html += '<td><button service-id="'+ accounts[i].id +'" class="removebtn">remove</button></td>'
           //html += '<td><button service-id="'+ accounts[i].id +'" class="editBtn">edit</button></td>'
           //html += '<td><button service-id="'+ accounts[i].id +'" class="loginBtn">login</button></td>'
