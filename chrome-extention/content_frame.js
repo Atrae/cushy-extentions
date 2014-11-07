@@ -44,10 +44,14 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
       saveDialog.button = '<input type="submit" class="cushy_ext_login-js" style="width: 70px; height: 25px; margin: 0;" value="ログインする">';
       saveDialog.insert();
       $('input.cushy_ext_login-js').click(function(){
-        var account =  msg.accountData[$('select#loginIdSelect').find('option:selected').attr('login-id')];
-        $(document).find(passwordElementName).val(account.password);
-        $(document).find(loginElementName).val(account.loginId);
-        $(document).find(loginElementName).closest('form').find('input[type="submit"]').click();
+        var account =  msg.accountData[$(this).closest('#cushy-ext-dialog').find('select#loginIdSelect option:selected').attr('login-id')];
+        for(i in forms){
+          if(forms[i].type === "signIn"){
+            $(document).find('input[name="'+forms[i].loginIdElementName+'"]').val(account.loginId);
+            $(document).find('input[name="'+forms[i].passwordElementName+'"]').val(account.password);
+            $(document).find('[name="'+forms[i].submitBtn.name+'"]').click();
+          }
+        }
       });
     }
   }
@@ -58,30 +62,27 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
   });
 });
 
-$(function(){
-  var forms = [];
-  $(document).find('form').each(function(){
-    var form = new Form($(this));
-    form.setInitValue();
-    forms.push(form);
-    if(form.type === "signUp"){
-      setRandomPassword(form);
-    }
-  });
-
-  $(document).on('submit', 'form', function(){
-    var index = $('form').index($(this));
-    chrome.runtime.sendMessage({ action: forms[index].type, passwordElementName: forms[index].passwordElementName, loginIdElementName: forms[index].loginIdElementName }, function(){ });
-  });
-
-  $('a').on('click', function(){
-    if($(this).closest('form').length > 0){
-      var index = $('form').index($(this).closest('form'));
-      chrome.runtime.sendMessage({ action: forms[index].type, passwordElementName: forms[index].passwordElementName, loginIdElementName: forms[index].loginIdElementName }, function(){ });
-    }
-  });
+var forms = [];
+$(document).find('form').each(function(){
+  var form = new Form($(this));
+  form.setInitValue();
+  forms.push(form);
+  if(form.type === "signUp"){
+    setRandomPassword(form);
+  }
 });
 
+$(document).on('submit', 'form', function(){
+  var index = $('form').index($(this));
+  chrome.runtime.sendMessage({ action: forms[index].type, passwordElementName: forms[index].passwordElementName, loginIdElementName: forms[index].loginIdElementName, url: forms[index].url }, function(){ });
+});
+
+$('a').on('click', function(){
+  if($(this).closest('form').length > 0){
+    var index = $('form').index($(this).closest('form'));
+    chrome.runtime.sendMessage({ action: forms[index].type, passwordElementName: forms[index].passwordElementName, loginIdElementName: forms[index].loginIdElementName, url: forms[index].url}, function(){ });
+  }
+});
 
 function setRandomPassword(form){
   var passwordGenerator = new PasswordGenerator();
