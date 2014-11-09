@@ -23,7 +23,7 @@ var requestTypeMessage = function(request,sender,sendResponse){
 chrome.runtime.onMessage.addListener(requestTypeMessage);
 
 var callBackFunc = function(details) {
-  if(details.method === "POST" && details.requestBody['formData']){
+  if(details.method === "POST" && details.requestBody && details.requestBody['formData']){
     var formData = JSON.stringify(details.requestBody['formData']);
     re = new RegExp(client.url, "i");
     if(details.url.match(re)){
@@ -110,27 +110,28 @@ var sendMessageFunc = function(tabId, changeInfo, tab){
                 }
               }
               if(type === 'openDialogBox' || type === 'confirmChangePasswordBox'){
-                client.msg = {action: type, tempData: tempData};
+                client.sendMsg({action: type, tempData: tempData});
               }
             }else{
-              client.msg = {action: "openDialogBox", tempData: tempData};
+              client.sendMsg({action: "openDialogBox", tempData: tempData});
             }
           });
         }else{
-          client.msg = {action: "noLoginNotification", tempData: tempData};
+          client.sendMsg({action: "noLoginNotification", tempData: tempData});
         }
       });
     }else{
-      if(!client.msg){
+      if(client.msg){
+        client.sendMsg();
+      }else{
         var url = String(client.url).replace(/http(s)?:\/\//, "").split('/')[0];
         chrome.storage.local.get([url], function (result) {
           if(result[url]){
-            client.msg = {action: "fillAccount", accountData: result[url]};
+            client.sendMsg({ action: "fillAccount", accountData: result[url] });
           }
         });
       }
     }
-    client.sendMsg();
   }
 }
 chrome.tabs.onUpdated.addListener(sendMessageFunc);
@@ -142,12 +143,12 @@ var autoLoginFunc = function(request,sender,sendResponse){
 }
 chrome.runtime.onMessage.addListener(autoLoginFunc);
 
-var dialogMessage = function(request,sender,sendResponse){
-  if(request.action === "dialog_close"){
+var changeClientData = function(request,sender,sendResponse){
+  if(request.action === "dialogClose"){
     client.toCloseDialog();
   }
 }
-chrome.runtime.onMessage.addListener(dialogMessage);
+chrome.runtime.onMessage.addListener(changeClientData);
 
 function popUploginCheck(){
   // this is witten login judge logic.

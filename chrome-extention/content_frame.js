@@ -3,7 +3,6 @@ var localData = new localData();
 
 //chrome.storage.local.clear(function(){ });
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
-  console.dir(msg);
   var tempData = msg.tempData;
   if(msg.action === "openDialogBox"){
     // open dialog box
@@ -50,7 +49,8 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
           if(forms[i].type === "signIn"){
             $(document).find('input[name="'+forms[i].loginIdElementName+'"]').val(account.loginId);
             $(document).find('input[name="'+forms[i].passwordElementName+'"]').val(account.password);
-            $(document).find('[name="'+forms[i].submitBtn.name+'"]').click();
+            console.log(forms[i].submitBtn.name);
+            $(document).find(forms[i].submitBtn).click();
           }
         }
       });
@@ -68,7 +68,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
 
   $('button.cushy-ext-close-js').click(function(){
     saveDialog.close();
-    chrome.runtime.sendMessage({action: "dialog_close"}, function(){});
+    chrome.runtime.sendMessage({action: "dialogClose"}, function(){});
   });
 });
 
@@ -76,6 +76,7 @@ var forms = [];
 $(document).find('form').each(function(){
   var form = new Form($(this));
   form.setInitValue();
+  console.log(form);
   forms.push(form);
   if(form.type === "signUp"){
     setRandomPassword(form);
