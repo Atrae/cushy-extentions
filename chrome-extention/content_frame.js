@@ -3,6 +3,7 @@ var localData = new localData();
 
 //chrome.storage.local.clear(function(){ });
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
+  console.dir(msg);
   var tempData = msg.tempData;
   if(msg.action === "openDialogBox"){
     // open dialog box
@@ -30,7 +31,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     saveDialog.button = '';
     saveDialog.select_options = '';
     saveDialog.insert();
-  }else if(msg.action === "fillAccount" ){
+  }else if(msg.action === "fillAccount"){
     // fill account
     var loginElementName = 'input[name="'+ msg.accountData[0].loginElementName +'"]';
     var passwordElementName = 'input[name="'+ msg.accountData[0].passwordElementName +'"]';
@@ -53,6 +54,15 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
           }
         }
       });
+    }
+  }else if(msg.action === "autoLogin"){
+    var account = msg.accountData;
+    for(i in forms){
+      if(forms[i].type === "signIn"){
+        $(document).find('input[name="'+forms[i].loginIdElementName+'"]').val(account.loginId);
+        $(document).find('input[name="'+forms[i].passwordElementName+'"]').val(account.password);
+        $(document).find('[name="'+forms[i].submitBtn.name+'"]').click();
+      }
     }
   }
 
