@@ -13,10 +13,7 @@ chrome.tabs.onUpdated.addListener(updateClientFunc);
 
 var requestTypeMessage = function(request,sender,sendResponse){
   if(request.action === 'signIn'){
-    tempData.type = 'signIn';
-    tempData.loginElementName = request.loginIdElementName;
-    tempData.passwordElementName = request.passwordElementName;
-    tempData.loginUrl = request.url;
+    tempData.setSignInData(request.loginIdElementName, request.passwordElementName, request.url)
   }else if(request.action === 'signUp'){
     tempData.type = 'signUp';
   }else{
@@ -26,7 +23,7 @@ var requestTypeMessage = function(request,sender,sendResponse){
 chrome.runtime.onMessage.addListener(requestTypeMessage);
 
 var callBackFunc = function(details) {
-  if(details.method === "POST" && details.requestBody['formData']){
+  if(details.method === "POST" && details.requestBody && details.requestBody['formData']){
     var formData = JSON.stringify(details.requestBody['formData']);
     re = new RegExp(client.url, "i");
     if(details.url.match(re)){
@@ -77,7 +74,7 @@ var callBackFunc = function(details) {
       if((tempData.type === 'signIn' || tempData.type === 'signUp') && tempData.password){
         tempData.url = client.url;
         tempData.tabId = client.tabId;
-        tempData.confirmFlg = true;
+        client.toOpenDialog();
       }
       console.dir(tempData);
     }
@@ -94,72 +91,64 @@ chrome.webRequest.onBeforeRequest.addListener(
   ['requestBody']
 );
 
-// open dialog logic
-var openDialogFunc = function(tabId, changeInfo, tab){
+var sendMessageFunc = function(tabId, changeInfo, tab){
   if(tab.status === "complete"){
-    if(tempData && tempData.confirmFlg === true && tempData.tabId === tabId && (tempData.password != '' && tempData.password != null) && !client.openDialogFlg){
+    if(client.checkRegisterDialog(tempData)){
       var url = tempData.url;
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        chrome.storage.local.get(['userInfo'], function (result) {
-          // already logined? or no login?
-          var userInfo = result['userInfo'];
-          if(userInfo && userInfo.userId && userInfo.password){
-            // already logined
-            chrome.storage.local.get([url], function (result) {
-              var accountInfos = result[url];
-              if(accountInfos){
-                var dialogType = 'openDialogBox'; // 1 is openDialogBox, 2 is confirmChangePasswordBox, 3 is nothing
-                for(i in accountInfos){
-                  if(accountInfos[i] && accountInfos[i].loginId === tempData.loginId[0]){
-                    if(accountInfos[i].password === tempData.password[0]){
-                      dialogType = 'nothing';
-                    }else{
-                      dialogType = 'confirmChangePasswordBox';
-                    }
-                    break;
-                  }
+      chrome.storage.local.get(['userInfo'], function (result) {
+        var userInfo = result['userInfo'];
+        if(userInfo && userInfo.userId && userInfo.password){
+          // already logined
+          chrome.storage.local.get([url], function (result) {
+            var accounts = result[url];
+            if(accounts){
+              var type = 'openDialogBox'; // 1 is openDialogBox, 2 is confirmChangePasswordBox, 3 is nothing
+              for(i in accounts){
+                if(accounts[i] && accounts[i].loginId === tempData.loginId[0]){
+                  type = (accounts[i].password === tempData.password[0])? 'nothing' : 'confirmChangePasswordBox';
+                  break;
                 }
-                if(dialogType === 'openDialogBox'){
-                  chrome.tabs.sendMessage(tabs[0].id, {action: "openDialogBox", tempData: tempData}, function(response){});
-                }else if(dialogType === 'confirmChangePasswordBox'){
-                  chrome.tabs.sendMessage(tabs[0].id, {action: "confirmChangePasswordBox", tempData: tempData}, function(response){});
-                }
-              }else{
-                chrome.tabs.sendMessage(tabs[0].id, {action: "openDialogBox", tempData: tempData}, function(response){});
               }
-            });
-          }else{
-            chrome.tabs.sendMessage(tabs[0].id, {action: "noLoginNotification", tempData: tempData}, function(response){});
-          }
-          client.toOpenDialog();
-        });
+              if(type === 'openDialogBox' || type === 'confirmChangePasswordBox'){
+                client.sendMsg({action: type, tempData: tempData});
+              }
+            }else{
+              client.sendMsg({action: "openDialogBox", tempData: tempData});
+            }
+          });
+        }else{
+          client.sendMsg({action: "noLoginNotification", tempData: tempData});
+        }
       });
+    }else{
+      if(client.msg){
+        client.sendMsg();
+      }else{
+        var url = String(client.url).replace(/http(s)?:\/\//, "").split('/')[0];
+        chrome.storage.local.get([url], function (result) {
+          if(result[url]){
+            client.sendMsg({ action: "fillAccount", accountData: result[url] });
+          }
+        });
+      }
     }
   }
 }
-chrome.tabs.onUpdated.addListener(openDialogFunc);
+chrome.tabs.onUpdated.addListener(sendMessageFunc);
 
-var fillAccountFunc = function(tabId, changeInfo, tab){
-  if(tab.status === "complete"){
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-      var url = String(tab.url).replace(/http(s)?:\/\//, "").split('/')[0];
-      chrome.storage.local.get([url], function (result) {
-        if(result[url]){
-          chrome.tabs.sendMessage(tabs[0].id, {action: "fillAccount", accountData: result[url]}, function(response) {});
-        }
-      });
-    });
-  };
+var autoLoginFunc = function(request,sender,sendResponse){
+  if(request.action === 'autoLogin'){
+    client.msg = {action: "autoLogin", accountData: request.loginData};
+  }
 }
-chrome.tabs.onUpdated.addListener(fillAccountFunc);
+chrome.runtime.onMessage.addListener(autoLoginFunc);
 
-var dialogMessage = function(request,sender,sendResponse){
-  if(request.action === "dialog_close"){
-    tempData.confirmFlg = false;
+var changeClientData = function(request,sender,sendResponse){
+  if(request.action === "dialogClose"){
     client.toCloseDialog();
   }
 }
-chrome.runtime.onMessage.addListener(dialogMessage);
+chrome.runtime.onMessage.addListener(changeClientData);
 
 function popUploginCheck(){
   // this is witten login judge logic.

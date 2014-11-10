@@ -30,7 +30,7 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     saveDialog.button = '';
     saveDialog.select_options = '';
     saveDialog.insert();
-  }else if(msg.action === "fillAccount" ){
+  }else if(msg.action === "fillAccount"){
     // fill account
     var loginElementName = 'input[name="'+ msg.accountData[0].loginElementName +'"]';
     var passwordElementName = 'input[name="'+ msg.accountData[0].passwordElementName +'"]';
@@ -49,16 +49,26 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
           if(forms[i].type === "signIn"){
             $(document).find('input[name="'+forms[i].loginIdElementName+'"]').val(account.loginId);
             $(document).find('input[name="'+forms[i].passwordElementName+'"]').val(account.password);
-            $(document).find('[name="'+forms[i].submitBtn.name+'"]').click();
+            console.log(forms[i].submitBtn.name);
+            $(document).find(forms[i].submitBtn).click();
           }
         }
       });
+    }
+  }else if(msg.action === "autoLogin"){
+    var account = msg.accountData;
+    for(i in forms){
+      if(forms[i].type === "signIn"){
+        $(document).find('input[name="'+forms[i].loginIdElementName+'"]').val(account.loginId);
+        $(document).find('input[name="'+forms[i].passwordElementName+'"]').val(account.password);
+        $(document).find('[name="'+forms[i].submitBtn.name+'"]').click();
+      }
     }
   }
 
   $('button.cushy-ext-close-js').click(function(){
     saveDialog.close();
-    chrome.runtime.sendMessage({action: "dialog_close"}, function(){});
+    chrome.runtime.sendMessage({action: "dialogClose"}, function(){});
   });
 });
 
@@ -66,6 +76,7 @@ var forms = [];
 $(document).find('form').each(function(){
   var form = new Form($(this));
   form.setInitValue();
+  console.log(form);
   forms.push(form);
   if(form.type === "signUp"){
     setRandomPassword(form);

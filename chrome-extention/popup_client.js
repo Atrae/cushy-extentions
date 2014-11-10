@@ -10,13 +10,13 @@ popupClient.prototype = {
         for(var i = 0; i < accounts.length; i++){
           html += '<tr class="account">'
           html += '<td>P:</td>'
-          html += '<td class="url">' + url + '</td>'
-          html += '<td class="loginId">' + accounts[i].loginId + '</td>'
-          //html += '<td><button service-id="3" class="removeBtn">remove</button></td>'
-          html += '<td><button class="loginBtn" url="'+ accounts[i].loginUrl +'" >login</button></td>'
-          //html += '<td><button service-id="'+ accounts[i].id +'" class="removebtn">remove</button></td>'
-          //html += '<td><button service-id="'+ accounts[i].id +'" class="editBtn">edit</button></td>'
-          //html += '<td><button service-id="'+ accounts[i].id +'" class="loginBtn">login</button></td>'
+          html += '<td>'+ url +'</td>'
+          html += '<td>'+ accounts[i].loginId +'</td>'
+          html += '<td><button class="loginBtn">login</button></td>'
+          html += '<td class="hiddenParams">'
+          html += '<input type="hidden" class="loginId" value="'+accounts[i].loginId+'">'
+          html += '<input type="hidden" class="loginUrl" value="'+accounts[i].loginUrl+'">'
+          html += '<input type="hidden" class="password" value="'+accounts[i].password+'">'
           html += '</tr>'
         }
       }

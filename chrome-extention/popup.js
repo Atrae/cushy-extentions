@@ -1,20 +1,23 @@
 $(function(){
 
+
   var client = new popupClient();
   var accountLists = [];
 
   var updateAccountLists = function(){
-    for(var i=0; i < $('tr.account').length; i++){
+    $('tr.account').each(function(){
       var accountList = new AccountList();
-      accountList.url = 'http://aipo.ig-partners.com/aipo/portal';
+      var _self = $(this);
+      accountList.url = _self.find('input.loginUrl').val();
+      accountList.loginId = _self.find('input.loginId').val();
+      accountList.password = _self.find('input.password').val();
       accountLists.push(accountList);
-    }
+    });
   }
 
   $.when(client.refresh()).done(setTimeout(updateAccountLists, 100));
 
   $(document).on('click', 'button.removeBtn', function(){
-    // ここは気持ち悪いがclassが何故か使えないので、一旦直書きで対応
     var index = $('button.removeBtn').index($(this));
     accountLists[index].remove();
   });
@@ -24,7 +27,14 @@ $(function(){
 
   $(document).on('click', 'button.loginBtn', function(){
     var index = $('button.loginBtn').index($(this));
-    chrome.tabs.create({ 'url': accountLists[index].url }, function(tab){});
+    var account = accountLists[index];
+    chrome.tabs.create({ 'url': account.url }, function(tab){
+      chrome.runtime.sendMessage({action: "autoLogin", loginData: account}, function(){});
+    });
   });
+
+  var sendLoginMessage = function(tab){
+  }
+
 
 });
