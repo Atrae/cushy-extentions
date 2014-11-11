@@ -29,10 +29,10 @@ User.prototype = {
           $('#completeImage').show();
           // set local storage
           var userInfo = {
-                           'userId': data['user_id'],
+                           'userId': data.user_data.user_id,
                            'mail': mail,
                            'password': password,
-                           'apiKey': data['api_key']
+                           'apiKey': data.user_data.api_key
                          }
           chrome.storage.local.set( { 'userInfo': userInfo } );
           // i wanna close popup here.
