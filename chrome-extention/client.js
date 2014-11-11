@@ -50,9 +50,9 @@ Client.prototype = {
 function importAccountsFromServer(accounts){
   var storageData = {};
   accounts.forEach(function(account){
-    var url = account.url;
-    storageData[url] = (storageData[url])? storageData[url] : [];
-    storageData[url].push({
+    var name = account.name;
+    storageData[name] = (storageData[name])? storageData[name] : [];
+    storageData[name].push({
       'loginId': account.login_id,
       'password': account.login_password,
       'loginUrl': account.url
@@ -71,7 +71,7 @@ function importGroupsFromServer(groups){
       'id': group.id
     });
   });
-  storageGroupData['group'] = storageData;
+  storageGroupData['groups'] = storageData;
   setStorageData(storageGroupData);
 }
 

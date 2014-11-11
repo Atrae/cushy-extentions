@@ -93,13 +93,12 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 var sendMessageFunc = function(tabId, changeInfo, tab){
-  if(tab.status === "complete"){
+  if(changeInfo.status === "complete"){
     if(client.checkRegisterDialog(tempData)){
       var url = tempData.url;
       chrome.storage.local.get(['userInfo'], function (result) {
         var userInfo = result['userInfo'];
-        if(userInfo && userInfo.userId && userInfo.password){
-          // already logined
+        if(userInfo && userInfo.userId && userInfo.apiKey){
           chrome.storage.local.get([url], function (result) {
             var accounts = result[url];
             if(accounts){
@@ -125,10 +124,10 @@ var sendMessageFunc = function(tabId, changeInfo, tab){
       if(client.msg){
         client.sendMsg();
       }else{
-        var url = String(client.url).replace(/http(s)?:\/\//, "").split('/')[0];
-        chrome.storage.local.get([url], function (result) {
-          if(result[url]){
-            client.sendMsg({ action: "fillAccount", accountData: result[url] });
+        var name = String(client.url).replace(/http(s)?:\/\//, "").split('/')[0];
+        chrome.storage.local.get([name], function (result) {
+          if(result[name]){
+            client.sendMsg({ action: "fillAccount", accountData: result[name] });
           }
         });
       }

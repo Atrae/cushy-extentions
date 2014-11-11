@@ -1,63 +1,67 @@
 var saveDialog = new saveDialog();
-var localData = new localData();
 
 //chrome.storage.local.clear(function(){ });
-chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
+
+var dialogFunction = function(msg, sender, sendResponse) {
   var tempData = msg.tempData;
   if(msg.action === "openDialogBox"){
-    // open dialog box
-    saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="登録する">';
-    saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントを登録しますか？"
-    saveDialog.select_options = '';
-    saveDialog.insert();
-    $('input.cushy-ext-submit-js').click(function(){
-      saveDialog.submit(msg.tempData, 'save');
-      chrome.runtime.sendMessage({action: "dialog_close"}, function(){});
+    saveDialog.setSubmitMsg("登録する");
+    saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントを登録しますか？";
+
+    chrome.storage.local.get(['groups'], function(result){
+      saveDialog.select_options += "<option group-id='0'>For Me</option>"
+      for(key in result['groups']){
+        saveDialog.select_options += "<option group-id='"+result['groups'][key][0].id+"'>For "+ key +"</option>"
+      }
+      saveDialog.insert();
     });
+
+    $(document).on('click', 'input.cushy-ext-submit-js', function(){
+      tempData.groupId = $(this).closest('#cushy-ext-dialog').find('select#forDialog option:selected').attr('group-id');
+      saveDialog.submit(tempData, 'save');
+    });
+
   }else if(msg.action === "confirmChangePasswordBox"){
-    // open dialog box
-    saveDialog.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="変更する">';
+    saveDialog.setSubmitMsg("変更する");
     saveDialog.message = tempData.url +"での"+ tempData.loginId +"のアカウントのPWを変更しますか？"
-    saveDialog.select_options = '';
     saveDialog.insert();
-    $('input.cushy-ext-submit-js').click(function(){
+
+    $(document).on('click', 'input.cushy-ext-submit-js', function(){
       saveDialog.submit(msg.tempData, 'changePassword');
-      chrome.runtime.sendMessage({action: "dialog_close"}, function(){});
     });
+
   }else if(msg.action === "noLoginNotification"){
     // prompt login
     saveDialog.message = "現在未ログインのようです。ログインしていただかないとアカウントは登録されません。";
-    saveDialog.button = '';
-    saveDialog.select_options = '';
     saveDialog.insert();
+
   }else if(msg.action === "fillAccount"){
-    // fill account
-    var loginElementName = 'input[name="'+ msg.accountData[0].loginElementName +'"]';
-    var passwordElementName = 'input[name="'+ msg.accountData[0].passwordElementName +'"]';
-    saveDialog.select_options = "";
+    var submitBtn, loginIdElementName, passWordElementName;
     for(i in msg.accountData){
       saveDialog.select_options += "<option login-id='"+i+"'>"+ msg.accountData[i].loginId +"</option>"
     }
-
-    if($(document).find(passwordElementName).length > 0){
+    for(var i=0; i < forms.length; i++){
+      if(forms[i].type === "signIn"){
+        loginIdElementName = forms[i].loginIdElementName;
+        passWordElementName = forms[i].passwordElementName;
+        submitBtn = forms[i].submitBtn;
+        break;
+      }
+    }
+    if(passWordElementName){
       saveDialog.message = "以前登録したアカウントでloginしますか？";
-      saveDialog.button = '<input type="submit" class="cushy_ext_login-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="ログインする">';
+      saveDialog.setSubmitMsg("login")
       saveDialog.insert();
-      $('input.cushy_ext_login-js').click(function(){
-        var account =  msg.accountData[$(this).closest('#cushy-ext-dialog').find('select#loginIdSelect option:selected').attr('login-id')];
-        for(i in forms){
-          if(forms[i].type === "signIn"){
-            $(document).find('input[name="'+forms[i].loginIdElementName+'"]').val(account.loginId);
-            $(document).find('input[name="'+forms[i].passwordElementName+'"]').val(account.password);
-            console.log(forms[i].submitBtn.name);
-            $(document).find(forms[i].submitBtn).click();
-          }
-        }
+      $(document).on('click', 'input.cushy-ext-submit-js', function(){
+        var account =  msg.accountData[$(this).closest('#cushy-ext-dialog').find('select#forDialog option:selected').attr('login-id')];
+        $(document).find('input[name="'+loginIdElementName+'"]').val(account.loginId);
+        $(document).find('input[name="'+passWordElementName+'"]').val(account.password);
+        $(document).find(submitBtn).click();
       });
     }
   }else if(msg.action === "autoLogin"){
     var account = msg.accountData;
-    for(i in forms){
+    for(var i=0; i < forms.length; i++){
       if(forms[i].type === "signIn"){
         $(document).find('input[name="'+forms[i].loginIdElementName+'"]').val(account.loginId);
         $(document).find('input[name="'+forms[i].passwordElementName+'"]').val(account.password);
@@ -66,11 +70,12 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     }
   }
 
-  $('button.cushy-ext-close-js').click(function(){
+  $(document).on('click', 'button.cushy-ext-close-js', function(){
     saveDialog.close();
-    chrome.runtime.sendMessage({action: "dialogClose"}, function(){});
   });
-});
+}
+
+chrome.extension.onMessage.addListener(dialogFunction);
 
 var forms = [];
 $(document).find('form').each(function(){

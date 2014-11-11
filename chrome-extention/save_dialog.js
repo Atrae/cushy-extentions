@@ -1,7 +1,7 @@
-var saveDialog = function(message, button, select_options){
-  this.message = message;
-  this.select_options = select_options;
-  this.button = button;
+var saveDialog = function(){
+  this.message;
+  this.select_options = '';
+  this.button;
 }
 
 saveDialog.prototype = {
@@ -17,7 +17,7 @@ saveDialog.prototype = {
     html += '<div style="background: #F9F9F9; padding: 5px 15px 15px;">';
     html += '<p style="margin: 10px 0 5px; font-size: 13px;">'+ this.message + '</p>';
     if(this.select_options){
-      html += '<select id="loginIdSelect" style="font-size: 16px; padding: 10px; margin: 0 0 5px; width: 100%; height: 2em; border: 2px solid #f9f9f9; background: #fff;">' + this.select_options +'</select>';
+      html += '<select id="forDialog" style="font-size: 16px; padding: 10px; margin: 0 0 5px; width: 100%; height: 2em; border: 2px solid #f9f9f9; background: #fff;">' + this.select_options +'</select>';
     }
     html += '<div class="cushy-ext-dialog-js">'+ this.button +'</div>';
     html += '</div>';
@@ -30,11 +30,15 @@ saveDialog.prototype = {
     });
   },
   close: function(){
+    chrome.runtime.sendMessage({action: "dialogClose"}, function(){});
     $('#cushy-ext-dialog').animate({
       height: '0px',
-      opacity: 0
-    }, 130, function() {
-    });
+      opacity: '0'
+    }, 130, function() { });
+    $('#cushy-ext-dialog').css('display', 'none');
+  },
+  setSubmitMsg: function(msg){
+    this.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="'+msg+'">';
   },
   submit: function(tempData, submitType){
     //localへの保存 + サーバへの保存
@@ -44,12 +48,11 @@ saveDialog.prototype = {
     var passwordElementName = tempData.passwordElementName;
     var password = tempData.password[0];
     var loginUrl = tempData.loginUrl;
+    var groupId = tempData.groupId;
     var storageData = {};
     chrome.storage.local.get([url], function (result){
       var accountInfos = result[url];
-      if(accountInfos === undefined || accountInfos === null){
-        accountInfos = [];
-      }
+      accountInfos = (accountInfos === undefined || accountInfos === null)? [] : accountInfos
       if(submitType === 'save'){ //save ver.
         accountInfos.push({
                             'loginElementName': loginElementName,
@@ -59,7 +62,7 @@ saveDialog.prototype = {
                             'loginUrl': loginUrl
                          })
       }else if(submitType === 'changePassword'){
-        for(i in accountInfos){
+        for(var i=0; i < accountInfos.length; i++){
           if(loginId === accountInfos[i].loginId){
             accountInfos[i].password = password;
             accountInfos[i].passwordElementName = passwordElementName;
@@ -87,8 +90,10 @@ saveDialog.prototype = {
                 loginElementName: loginElementName,
                 password: password,
                 passwordElementName: passwordElementName,
-                url: url,
-                api_key: result['userInfo'].apiKey
+                url: loginUrl,
+                name: url,
+                groupId: groupId,
+                apiKey: result['userInfo'].apiKey
               },
         beforesend: function(){
         }
