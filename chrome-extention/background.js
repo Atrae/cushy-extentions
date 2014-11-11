@@ -8,6 +8,7 @@ var client = new Client();
 var updateClientFunc = function(tabId, changeInfo, tab){
   client.tabId = tabId;
   client.url = String(tab.url).replace(/http(s)?:\/\//, "").split('/')[0];
+  client.updateStorageData();
 }
 chrome.tabs.onUpdated.addListener(updateClientFunc);
 

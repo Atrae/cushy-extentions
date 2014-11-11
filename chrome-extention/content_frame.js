@@ -76,7 +76,6 @@ var forms = [];
 $(document).find('form').each(function(){
   var form = new Form($(this));
   form.setInitValue();
-  console.log(form);
   forms.push(form);
   if(form.type === "signUp"){
     setRandomPassword(form);
