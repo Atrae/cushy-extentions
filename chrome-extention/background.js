@@ -147,6 +147,8 @@ chrome.runtime.onMessage.addListener(autoLoginFunc);
 var changeClientData = function(request,sender,sendResponse){
   if(request.action === "dialogClose"){
     client.toCloseDialog();
+  }else if(request.action === "storageRefresh"){
+    client.updateStorageData(true);
   }
 }
 chrome.runtime.onMessage.addListener(changeClientData);

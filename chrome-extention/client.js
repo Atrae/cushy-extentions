@@ -21,11 +21,11 @@ Client.prototype = {
   checkRegisterDialog: function(tempData){
     return (tempData.tabId === this.tabId && tempData.password != '' && tempData.password != null && this.openDialogFlg === true )? true : false;
   },
-  updateStorageData: function(){
+  updateStorageData: function(analogFlg){
     var tenMinutesAgo = new Date();
     tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes()-10);
     var _self = this;
-    if(_self.lastUpdatedAt === undefined || _self.lastUpdatedAt < tenMinutesAgo){
+    if(_self.lastUpdatedAt === undefined || _self.lastUpdatedAt < tenMinutesAgo || analogFlg === true){
       chrome.storage.local.get(['userInfo'], function(result){
         $.ajax({
           method: "GET",
@@ -39,7 +39,6 @@ Client.prototype = {
           importAccountsFromServer(data['accounts']);
           importGroupsFromServer(data['groups']);
           _self.lastUpdatedAt = new Date();
-          console.dir(_self);
         }).fail(function(state){
           // do nothing
         });

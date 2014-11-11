@@ -33,8 +33,9 @@ $(function(){
     });
   });
 
-  var sendLoginMessage = function(tab){
-  }
 
+  $('button#storageRefresh').click(function(){
+    chrome.runtime.sendMessage({ action: "storageRefresh" }, function(){});
+  });
 
 });
