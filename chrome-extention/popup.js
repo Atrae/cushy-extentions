@@ -1,6 +1,5 @@
 $(function(){
 
-
   var client = new popupClient();
   var accountLists = [];
 
@@ -33,6 +32,11 @@ $(function(){
     });
   });
 
+  $(document).on('click', 'button.inputBtn', function(){
+    var index = $('button.inputBtn').index($(this));
+    var account = accountLists[index];
+    chrome.runtime.sendMessage({action: "analogLogin", loginData: account}, function(){});
+  });
 
   $('button#storageRefresh').click(function(){
     chrome.runtime.sendMessage({ action: "storageRefresh" }, function(){});

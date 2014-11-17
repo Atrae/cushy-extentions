@@ -50,34 +50,29 @@ saveDialog.prototype = {
     var loginUrl = tempData.loginUrl;
     var groupId = tempData.groupId;
     var storageData = {};
+    var storage_client = new StorageClient();
     chrome.storage.local.get([url], function (result){
       var accountInfos = result[url];
       accountInfos = (accountInfos === undefined || accountInfos === null)? [] : accountInfos
       if(submitType === 'save'){ //save ver.
         accountInfos.push({
-                            'loginElementName': loginElementName,
-                            'loginId': loginId,
-                            'passwordElementName': passwordElementName,
-                            'password': password,
-                            'loginUrl': loginUrl
-                         })
+          'loginElementName': loginElementName,
+          'loginId': loginId,
+          'passwordElementName': passwordElementName,
+          'password': password,
+          'loginUrl': loginUrl
+        })
       }else if(submitType === 'changePassword'){
         for(var i=0; i < accountInfos.length; i++){
           if(loginId === accountInfos[i].loginId){
             accountInfos[i].password = password;
             accountInfos[i].passwordElementName = passwordElementName;
+            accountInfos[i].loginUrl = loginUrl;
           }
         }
       }
       storageData[url] = accountInfos;
-      chrome.storage.local.set(storageData, function(result){
-        // Notify that we saved.
-        if(chrome.extension.lastError !== undefined) {
-          console.log('failed');
-        }else{
-          console.log('ok!save');
-        }
-      });
+      storage_client.save(storageData);
     });
 
     chrome.storage.local.get(['userInfo'], function(result){
