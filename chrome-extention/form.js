@@ -47,12 +47,12 @@ Form.prototype = {
   setElementStr: function(){
     if(this.submitBtn.value){
       this.elementStr += this.submitBtn.value;
-    }else{
-      if(this.submitBtn.text != undefined){
-        this.elementStr += this.submitBtn.text;
-      }else if(this.submitBtn.textContent != undefined ){
-        this.elementStr += this.submitBtn.textContent;
-      }
+    }
+    if(this.submitBtn.text != undefined){
+      this.elementStr += this.submitBtn.text;
+    }
+    if(this.submitBtn.textContent != undefined ){
+      this.elementStr += this.submitBtn.textContent;
     }
     if(this.submitBtn.id != undefined){
       this.elementStr += this.submitBtn.id;
