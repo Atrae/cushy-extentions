@@ -25,15 +25,19 @@ var requestTypeMessage = function(request,sender,sendResponse){
 chrome.runtime.onMessage.addListener(requestTypeMessage);
 
 var callBackFunc = function(details) {
-  if(details.tabId === client.tabId && details.method === "POST" && details.requestBody && details.requestBody['formData']){
+  if(details.tabId === client.tabId && checkFormPostData(details)){
     var formData = details.requestBody['formData'];
     var JformData = JSON.stringify(formData);
     re = new RegExp(client.domain, "i");
     if(details.url.match(re)){
       var password, userId, passwordFormId, mailId, nameId, loginId;
 
-      tempData.setLoginId(formData[tempData.loginElementName]);
-      tempData.setPassword(formData[tempData.passwordElementName]);
+      if(tempData.loginElementName){
+        tempData.loginId = formData[tempData.loginElementName];
+      }
+      if(tempData.passwordElementName){
+        tempData.password = formData[tempData.passwordElementName];
+      }
 
       if(!tempData.password && JformData.match(/password/i)) {
         splitData = JformData.split(",");
@@ -203,3 +207,11 @@ function replaceSymbol(str){
   return str.replace(/:(.+)/, '').replace(/"/g, '');
 }
 
+function checkFormPostData(details){
+  var result = false;
+  if(details.method === "POST" && details.type === "main_frame"
+    && details.requestBody && details.requestBody['formData']){
+    result = true;
+  }
+  return result;
+}

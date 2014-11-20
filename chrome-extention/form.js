@@ -68,10 +68,8 @@ Form.prototype = {
   checkType: function(){
 
     if(this.actionUrl){
-      if(this.actionUrl.indexOf('login') != -1 || this.actionUrl.indexOf('login') != -1){
+      if(this.actionUrl.indexOf('login') != -1 || this.actionUrl.indexOf('signin') != -1){
         this.type = 'signIn';
-      }else if(this.actionUrl.indexOf('create') != -1){
-        this.type = 'signUp';
       }
     }
 

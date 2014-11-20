@@ -5,7 +5,7 @@ var saveDialog = new saveDialog();
 var dialogFunction = function(msg, sender, sendResponse) {
   var tempData = msg.tempData;
   if(msg.action === "openDialogBox"){
-    if(tempData.checkOpenDialogBox()){
+    if(tempData.domain && tempData.loginId && tempData.password){
       saveDialog.setSubmitMsg("登録する");
       saveDialog.message = tempData.domain +"での"+ tempData.loginId +"のアカウントを登録しますか？";
 
