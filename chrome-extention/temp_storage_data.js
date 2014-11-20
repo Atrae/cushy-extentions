@@ -3,41 +3,29 @@ var TempStorageData = function(){
   this.loginElementName;
   this.password;
   this.passwordElementName;
-  this.url;
-  this.mail;
-  this.userName;
-  this.userNameElementName;
+  this.domain;
   this.formData;
   this.tabId;
   this.type;
-  this.loginUrl;
+  this.url;
   this.groupId;
 };
 
 TempStorageData.prototype = {
-  setData: function(type, loginElementName, passwordElementName, loginUrl){
-    this.type = type;
-    this.loginElementName = loginElementName;
-    this.passwordElementName = passwordElementName;
-    this.loginUrl = loginUrl;
-  },
-  save: function(){
-    chrome.storage.local.set({ 'loginElementName': this.loginElementName, 'loginId': this.loginId, 'passwordElementName': this.passwordElementName, 'password': this.password, 'url': this.url }, function() {
-          // Notify that we saved.
-      console.log('save');
-    });
+  setFromRequest: function(request){
+    this.type = request.action;
+    this.loginElementName = request.loginIdElementName;
+    this.passwordElementName = request.passwordElementName;
+    this.url = request.url;
   },
   clear: function(){
     this.loginId = null;
     this.password = null;
-    this.url = null;
-    this.mail = null;
-    this.userName = null;
-    this.userNameElementName = null;
+    this.domain = null;
     this.formData = null;
     this.tabId = null;
     this.type = null;
-    this.loginUrl = null;
+    this.url = null;
     this.groupId = null;
   },
   checkUseElementName: function(){
@@ -48,20 +36,25 @@ TempStorageData.prototype = {
     return result
   },
   setLoginId: function(loginId){
-    if(!this.loginId){
+    if(this.loginElementName){
       this.loginId = loginId;
     }
   },
   setPassword: function(password){
-    if(!this.password){
+    if(this.passwordElementName){
       this.password = password;
     }
   },
-  setUrl: function(url){
-    if(this.type === "signUp"){
-      this.url = String(url).replace(/http(s)?:\/\//, "").split('/')[0];;
-    }else if(this.type === "signIn"){
-      this.url = url;
+  setUrl: function(client){
+    url = (this.type === "signUp")? client.beforeUrl : client.url;
+    this.domain = client.domain;
+    this.url = url;
+  },
+  checkOpenDialogBox: function(){
+    var result = false;
+    if(this.domain && this.loginId && this.password){
+      result = true;
     }
+    return result;
   }
 }

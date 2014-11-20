@@ -30,7 +30,7 @@ saveDialog.prototype = {
     });
   },
   close: function(){
-    chrome.runtime.sendMessage({action: "dialogClose"}, function(){});
+    dialogClose();
     $('#cushy-ext-dialog').animate({
       height: '0px',
       opacity: '0'
@@ -42,17 +42,17 @@ saveDialog.prototype = {
   },
   submit: function(tempData, submitType){
     //localへの保存 + サーバへの保存
-    var url = tempData.url;
+    var domain = tempData.domain;
     var loginElementName = tempData.loginElementName;
     var loginId = tempData.loginId[0];
     var passwordElementName = tempData.passwordElementName;
     var password = tempData.password[0];
-    var loginUrl = tempData.loginUrl;
+    var url = tempData.url;
     var groupId = tempData.groupId;
     var storageData = {};
     var storage_client = new StorageClient();
-    chrome.storage.local.get([url], function (result){
-      var accountInfos = result[url];
+    chrome.storage.local.get([domain], function (result){
+      var accountInfos = result[domain];
       accountInfos = (accountInfos === undefined || accountInfos === null)? [] : accountInfos
       if(submitType === 'save'){ //save ver.
         accountInfos.push({
@@ -60,18 +60,18 @@ saveDialog.prototype = {
           'loginId': loginId,
           'passwordElementName': passwordElementName,
           'password': password,
-          'loginUrl': loginUrl
+          'url': url
         })
       }else if(submitType === 'changePassword'){
         for(var i=0; i < accountInfos.length; i++){
           if(loginId === accountInfos[i].loginId){
             accountInfos[i].password = password;
             accountInfos[i].passwordElementName = passwordElementName;
-            accountInfos[i].loginUrl = loginUrl;
+            accountInfos[i].url = url;
           }
         }
       }
-      storageData[url] = accountInfos;
+      storageData[domain] = accountInfos;
       storage_client.save(storageData);
     });
 
@@ -85,8 +85,8 @@ saveDialog.prototype = {
                 loginElementName: loginElementName,
                 password: password,
                 passwordElementName: passwordElementName,
-                url: loginUrl,
-                name: url,
+                url: url,
+                name: domain,
                 groupId: groupId,
                 apiKey: result['userInfo'].apiKey
               },
@@ -103,3 +103,6 @@ saveDialog.prototype = {
   }
 }
 
+function dialogClose(){
+  chrome.runtime.sendMessage({action: "dialogClose"}, function(){});
+}

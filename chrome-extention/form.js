@@ -1,10 +1,9 @@
 var Form = function(form){
   this.formData = form;
   this.submitBtn;
-  this.submitBtnText;
   this.elementStr = '';
   this.type;
-  this.setUrl;
+  this.actionUrl;
   this.url;
   this.loginIdElementName;
   this.passwordElementName;
@@ -13,11 +12,11 @@ var Form = function(form){
 
 Form.prototype = {
   setInitValue: function(){
+    this.actionUrl = this.formData.attr('action');
     this.setSubmitBtn();
-    if(this.submitBtn){
-      this.setElementStr();
-      this.checkType();
-    }
+    this.setElementStr();
+    this.checkType();
+
     if(this.type === "signIn" || this.type === "signUp"){
       this.setPasswordField();
       this.setLoginIdField();
@@ -45,50 +44,54 @@ Form.prototype = {
     }
   },
   setElementStr: function(){
-    if(this.submitBtn.value){
-      this.elementStr += this.submitBtn.value;
-    }
-    if(this.submitBtn.text != undefined){
-      this.elementStr += this.submitBtn.text;
-    }
-    if(this.submitBtn.textContent != undefined ){
-      this.elementStr += this.submitBtn.textContent;
-    }
-    if(this.submitBtn.id != undefined){
-      this.elementStr += this.submitBtn.id;
-    }
-    if(this.submitBtn.className != undefined){
-      this.elementStr += this.submitBtn.className;
-    }
-    if(this.submitBtn.name != undefined){
-      this.elementStr += this.submitBtn.name;
-    }
-  },
-  setSubmitBtnText: function(){
-    this.submitBtnText = this.submitBtn.value;
-    if(!this.submitBtnText){
-      this.submitBtnText = this.submitBtn.text;
-    }
-    if(!this.submitBtnText){
-      //this.submitBtnText = this.submitBtn.html();
+    if(this.submitBtn){
+      if(this.submitBtn.value){
+        this.elementStr += this.submitBtn.value;
+      }
+      if(this.submitBtn.text != undefined){
+        this.elementStr += this.submitBtn.text;
+      }
+      if(this.submitBtn.textContent != undefined ){
+        this.elementStr += this.submitBtn.textContent;
+      }
+      if(this.submitBtn.id != undefined){
+        this.elementStr += this.submitBtn.id;
+      }
+      if(this.submitBtn.className != undefined){
+        this.elementStr += this.submitBtn.className;
+      }
+      if(this.submitBtn.name != undefined){
+        this.elementStr += this.submitBtn.name;
+      }
     }
   },
   checkType: function(){
-    var singUpTextArray = ["sign up", "signup", "Create a new account", "登録", "作成", "registration", "entry", "register"];
-    for(var i=0; i < singUpTextArray.length; i++){
-      re = new RegExp(singUpTextArray[i], "i");
-      if(this.elementStr.match(re)){
+
+    if(this.actionUrl){
+      if(this.actionUrl.indexOf('login') != -1 || this.actionUrl.indexOf('login') != -1){
+        this.type = 'signIn';
+      }else if(this.actionUrl.indexOf('create') != -1){
         this.type = 'signUp';
-        break;
       }
     }
+
     if(!this.type){
-      var signInTextArray = ["sign in", "signin", "login", "log in", "ログイン"];
-      for(var i=0; i < signInTextArray.length; i++){
-        re = new RegExp(signInTextArray[i], "i");
+      var singUpTextArray = ["sign up", "signup", "Create a new account", "登録", "作成", "registration", "entry", "register"];
+      for(var i=0; i < singUpTextArray.length; i++){
+        re = new RegExp(singUpTextArray[i], "i");
         if(this.elementStr.match(re)){
-          this.type = 'signIn';
+          this.type = 'signUp';
           break;
+        }
+      }
+      if(!this.type){
+        var signInTextArray = ["sign in", "signin", "login", "log in", "ログイン"];
+        for(var i=0; i < signInTextArray.length; i++){
+          re = new RegExp(signInTextArray[i], "i");
+          if(this.elementStr.match(re)){
+            this.type = 'signIn';
+            break;
+          }
         }
       }
     }

@@ -1,12 +1,19 @@
 var Client = function(){
   this.tabId;
+  this.domain;
   this.url;
+  this.beforeUrl; //for_signup
   this.openDialogFlg = false;
   this.msg;
   this.lastUpdatedAt;
 }
 
 Client.prototype = {
+  updateUrl: function(url){
+    this.beforeUrl = this.url;
+    this.url = String(url).replace(/\?(.+)/, "");
+    this.domain = String(url).replace(/http(s)?:\/\//, "").split('/')[0];
+  },
   toOpenDialog: function(){
     this.openDialogFlg = true;
   },
@@ -19,7 +26,7 @@ Client.prototype = {
     this.msg = null;
   },
   checkRegisterDialog: function(tempData){
-    return (tempData.tabId === this.tabId && tempData.password != '' && tempData.password != null && this.openDialogFlg === true )? true : false;
+    return (tempData.tabId === this.tabId && tempData.password != '' && tempData.password != null && this.openDialogFlg === true && tempData.url != undefined )? true : false;
   },
   updateStorageData: function(analogFlg){
     var tenMinutesAgo = new Date();

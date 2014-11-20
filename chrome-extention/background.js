@@ -7,15 +7,17 @@ var client = new Client();
 var storage_client = new StorageClient();
 
 var updateClientFunc = function(tabId, changeInfo, tab){
-  client.tabId = tabId;
-  client.url = String(tab.url).replace(/http(s)?:\/\//, "").split('/')[0];
-  client.updateStorageData();
+  if(changeInfo.status === "complete"){
+    client.tabId = tabId;
+    client.updateUrl(tab.url);
+    client.updateStorageData();
+  }
 }
 chrome.tabs.onUpdated.addListener(updateClientFunc);
 
 var requestTypeMessage = function(request,sender,sendResponse){
   if(request.action === 'signIn' || request.action === 'signUp'){
-    tempData.setData(request.action, request.loginIdElementName, request.passwordElementName, request.url)
+    tempData.setFromRequest(request);
   }else{
     tempData.type = null;
   }
@@ -23,19 +25,50 @@ var requestTypeMessage = function(request,sender,sendResponse){
 chrome.runtime.onMessage.addListener(requestTypeMessage);
 
 var callBackFunc = function(details) {
-  if(details.method === "POST" && details.requestBody && details.requestBody['formData']){
-    var formData = JSON.stringify(details.requestBody['formData']);
-    re = new RegExp(client.url, "i");
+  if(details.tabId === client.tabId && details.method === "POST" && details.requestBody && details.requestBody['formData']){
+    var formData = details.requestBody['formData'];
+    var JformData = JSON.stringify(formData);
+    re = new RegExp(client.domain, "i");
     if(details.url.match(re)){
-      var mail, password, userName, domain, userId, passwordFormId, mailId, nameId, loginId;
-      if(tempData.loginElementName){
-        tempData.setLoginId(details.requestBody['formData'][tempData.loginElementName]);
+      var password, userId, passwordFormId, mailId, nameId, loginId;
+
+      tempData.setLoginId(formData[tempData.loginElementName]);
+      tempData.setPassword(formData[tempData.passwordElementName]);
+
+      if(!tempData.password && JformData.match(/password/i)) {
+        splitData = JformData.split(",");
+        for(var i=0, len=splitData.length; i < len; i++){
+          if(!password && splitData[i].match(/"(.+)?password(.)?"/)){
+            passwordFormId = replaceSymbol(String(splitData[i].match(/"(.+)?password(.)?":/)));
+            password = formData[passwordFormId];
+          }else if(splitData[i].match(/"(.+)?mail(.)?"/)){
+            mailId = replaceSymbol(String(splitData[i].match(/"(.+)?mail(.)?":/)));
+          }else if(splitData[i].match(/"(.+)?user(.+)?id(.)?"/)){
+            userId = replaceSymbol(String(splitData[i].match(/"(.+)?user(.+)?id(.)?":/)));
+          }else if(splitData[i].match(/"(.+)?name(.+)?"/)){
+            nameId = replaceSymbol(String(splitData[i].match(/"(.+)?name(.+)?":/)));
+          }else if(splitData[i].match(/"(.+)?login(.+)?"/)){
+            loginId = replaceSymbol(String(splitData[i].match(/"(.+)?login(.+)?":/)));
+          }
+        }
+        //set password
+        if(password){
+          tempData.password = password;
+          tempData.passwordElementName = passwordFormId;
+        }
+        if(mailId){
+          tempData.loginId = formData[mailId];
+        }else if(userId){
+          tempData.loginId = formData[userId];
+        }else if(nameId){
+          tempData.loginId = formData[nameId];
+        }else if(loginId){
+          tempData.loginId = formData[loginId];
+        }
       }
-      if(tempData.passwordElementName){
-        tempData.setPassword(details.requestBody['formData'][tempData.passwordElementName]);
-      }
+
       if(tempData.password){
-        tempData.setUrl(client.url);
+        tempData.setUrl(client);
         tempData.tabId = client.tabId;
         client.toOpenDialog();
       }
@@ -56,19 +89,23 @@ chrome.webRequest.onBeforeRequest.addListener(
 var sendMessageFunc = function(tabId, changeInfo, tab){
   if(changeInfo.status === "complete"){
     if(client.checkRegisterDialog(tempData)){
-      var url = tempData.url;
+      var domain = tempData.domain;
       chrome.storage.local.get(['userInfo'], function (result) {
         var userInfo = result['userInfo'];
         if(userInfo && userInfo.userId && userInfo.apiKey){
-          chrome.storage.local.get([url], function (result) {
-            var accounts = result[url];
+          chrome.storage.local.get([domain], function (result) {
+            var accounts = result[domain];
             if(accounts){
               var type = 'openDialogBox'; // 1 is openDialogBox, 2 is confirmChangePasswordBox, 3 is nothing
-              for(i in accounts){
-                if(accounts[i] && accounts[i].loginId === tempData.loginId[0]){
-                  type = (accounts[i].password === tempData.password[0])? 'nothing' : 'confirmChangePasswordBox';
-                  if(accounts[i].loginUrl != tempData.loginUrl){
-                    storage_client.updateUrl(url, tempData.loginUrl);
+              for(var i=0, len=accounts.length; i < len; i++){
+                if(accounts[i].loginId === tempData.loginId[0]){
+                  if(accounts[i].password === tempData.password[0]){
+                    tempData.clear();
+                  }else{
+                    type = 'confirmChangePasswordBox';
+                  }
+                  if(accounts[i].url != tempData.url){
+                    storage_client.updateUrl(domain, tempData.url);
                   }
                   break;
                 }
@@ -88,10 +125,10 @@ var sendMessageFunc = function(tabId, changeInfo, tab){
       if(client.msg){
         client.sendMsg();
       }else{
-        var name = String(client.url).replace(/http(s)?:\/\//, "").split('/')[0];
-        chrome.storage.local.get([name], function (result) {
-          if(result[name]){
-            client.sendMsg({ action: "fillAccount", accountData: result[name] });
+        var domain = client.domain;
+        chrome.storage.local.get([domain], function (result) {
+          if(result[domain]){
+            client.sendMsg({ action: "fillAccount", accountData: result[domain] });
           }
         });
       }
@@ -125,9 +162,6 @@ var changeClientData = function(request,sender,sendResponse){
 chrome.runtime.onMessage.addListener(changeClientData);
 
 function popUploginCheck(){
-  // this is witten login judge logic.
-  // you can deal with storage data only in the callback.
-  // i wanna gather into the login logic.
   chrome.storage.local.get(['userInfo'], function (result) {
     if(result['userInfo'] && result['userInfo'].userId && result['userInfo'].password){
       chrome.browserAction.setPopup({

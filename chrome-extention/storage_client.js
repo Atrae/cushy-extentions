@@ -9,16 +9,17 @@ StorageClient.prototype = {
       }
     });
   },
-  updateUrl: function(url, newUrl){
+  updateUrl: function(domain, url){
     var storageData = {};
-    chrome.storage.local.get([url], function(result){
-      var accountInfos = result[url];
+    var _self = this;
+    chrome.storage.local.get([domain], function(result){
+      var accountInfos = result[domain];
       accountInfos = (accountInfos === undefined || accountInfos === null)? [] : accountInfos
       for(var i=0; i < accountInfos.length; i++){
-        accountInfos[i].loginUrl = newUrl;
+        accountInfos[i].url = url;
       }
-      storageData[url] = accountInfos;
-      this.save(storageData);
+      storageData[domain] = accountInfos;
+      _self.save(storageData);
     });
   }
 }
