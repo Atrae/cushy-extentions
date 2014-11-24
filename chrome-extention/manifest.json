@@ -19,16 +19,26 @@
     "16": "icon.png"
   },
   "content_scripts": [{
-    "matches": ["http://*/*", "https://*/*"],
-    "js": ["jquery-2.1.1.min.js", "storage_client.js", "save_dialog.js", "local_data.js", "form.js", "password_generator.js", "content_frame.js"],
+    "matches": [
+      "http://*/*",
+      "https://*/*"
+    ],
+    "js": [
+      "storage_client.js",
+      "save_dialog.js",
+      "local_data.js",
+      "form.js",
+      "password_generator.js",
+      "content_frame.js"
+    ],
     "all_frames": true
   }],
   "permissions": [
-                   "webRequest",
-                   "webRequestBlocking",
-                   "*://*/*",
-                   "storage",
-                   "tabs",
-                   "cookies"
-                 ]
+    "webRequest",
+    "webRequestBlocking",
+    "*://*/*",
+    "storage",
+    "tabs",
+    "cookies"
+  ]
 }

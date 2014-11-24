@@ -4,54 +4,32 @@ User.prototype = {
   login: function(mail, password, funcOption){
     var loginId = mail;
     var password = password;
-    $.ajax({
-      method: "POST",
-      url : "http://localhost:3000/apis/login",
-      data: { mail: mail, password: password },
-      beforeSend: function(){
-        if(funcOption && funcOption.beforeSendFunc()){
-          $(funcOption.beforeSendFunc());
-        }else{
-          //ログイン用のモーダル表示
-          $('#loginBlock').hide();
-          $('#loadingImage').show();
-        }
-      }
-    }).done(function(data ,status){
-      if(funcOption && funcOption.doneFunc()){
-        $(funcOption.doneFunc());
+    var request = new XMLHttpRequest();
+    request.open("POST", "http://localhost:3000/api/v1/users/login", true);
+    request.setRequestHeader( "Content-type", "application/x-www-form-urlencoded" ); // only for POST requests
+    request.onreadystatechange = function () {
+      if(request.readyState != 4 || request.status != 201){
+        document.getElementById('errorNotification').style.display='block';
+        document.getElementById('errorNotification').text = 'network error!';
       }else{
-        $('#loadingImage').hide();
-        $('#errorNotification').hide();
-
+        var data = JSON.parse(request.responseText);
+        document.getElementById('errorNotification').style.display='none';
         if(data['result'] === true){
-          // login success
-          $('#completeImage').show();
-          // set local storage
+          document.getElementById('loginBlock').style.display='none';
+          document.getElementById('completeImage').style.display='block';
           var userInfo = {
-                           'userId': data.user_data.user_id,
-                           'mail': mail,
-                           'password': password,
-                           'apiKey': data.user_data.api_key
-                         }
+            'userId': data.user_data.user_id,
+            'mail': mail,
+            'password': password,
+            'apiKey': data.user_data.api_key
+          }
           chrome.storage.local.set( { 'userInfo': userInfo } );
-          // i wanna close popup here.
         }else{
-          // login failed
-          $('#errorNotification').show();
-          $('#errorNotification').text('mail or password is wrong!');
-          $('#loginBlock').show();
+          document.getElementById('errorNotification').style.display='block';
+          document.getElementById('errorNotification').text = 'mail or password is wrong!';
         }
       }
-    }).fail(function(state){
-      $('#loadingImage').hide();
-      if(funcOption && funcOption.failFunc()){
-        $(funcOption.failFunc());
-      }else{
-        $('#errorNotification').show();
-        $('#errorNotification').text('network error!');
-        $('#loginBlock').show();
-      }
-    });
+    };
+    request.send("mail="+mail+"&password="+password);
   }
 };

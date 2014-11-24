@@ -1,13 +1,14 @@
 window.addEventListener('load', function(evt) {
-  $('#submit').click(function(){
-    loginBtnSubmit();
-  });
+  if(document.getElementById('loginSubmit')){
+    document.getElementById('loginSubmit')
+      .addEventListener('click', function(){loginBtnSubmit()}, false);
+  }
 });
 
 function loginBtnSubmit() {
   //loginの処理を記入
   var user = new User();
-  user.login($('input#mail').val(), $('input#password').val());
+  var mail = document.getElementById('mail').value;
+  var password = document.getElementById('password').value;
+  user.login(mail, password);
 }
-
-
