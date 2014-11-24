@@ -34,21 +34,20 @@ Client.prototype = {
     var _self = this;
     if(_self.lastUpdatedAt === undefined || _self.lastUpdatedAt < tenMinutesAgo || analogFlg === true){
       chrome.storage.local.get(['userInfo'], function(result){
-        $.ajax({
-          method: "GET",
-          url : "http://localhost:3000/apis/items",
-          data: {
-                  userId: result['userInfo'].userId, //認証方法は別途検討
-                  apiKey: result['userInfo'].apiKey
-                },
-          beforesend: function(){ /* do nothing */ }
-        }).done(function(data ,status){
-          importAccountsFromServer(data['accounts']);
-          importGroupsFromServer(data['groups']);
-          _self.lastUpdatedAt = new Date();
-        }).fail(function(state){
-          // do nothing
-        });
+        var request = new XMLHttpRequest();
+        var params = "user_id="+result['userInfo'].userId+"&api_key="+result['userInfo'].apiKey
+        request.open("GET", "http://localhost:3000/api/v1/items?"+params, true);
+        request.onreadystatechange = function () {
+          if(request.readyState != 4 || request.status != 200){
+            // fail function
+          }else{
+            var data = JSON.parse(request.responseText);
+            importAccountsFromServer(data['accounts']);
+            importGroupsFromServer(data['groups']);
+            _self.lastUpdatedAt = new Date();
+          }
+        };
+        request.send();
       });
     }
   }
@@ -56,6 +55,7 @@ Client.prototype = {
 
 function importAccountsFromServer(accounts){
   var storageData = {};
+  var storageAccountData = {};
   accounts.forEach(function(account){
     var name = account.name;
     storageData[name] = (storageData[name])? storageData[name] : [];
@@ -65,7 +65,8 @@ function importAccountsFromServer(accounts){
       'loginUrl': account.url
     });
   });
-  setStorageData(storageData);
+  storageAccountData['accounts'] = storageData;
+  setStorageData(storageAccountData);
 }
 
 function importGroupsFromServer(groups){

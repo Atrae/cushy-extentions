@@ -97,8 +97,8 @@ var sendMessageFunc = function(tabId, changeInfo, tab){
       chrome.storage.local.get(['userInfo'], function (result) {
         var userInfo = result['userInfo'];
         if(userInfo && userInfo.userId && userInfo.apiKey){
-          chrome.storage.local.get([domain], function (result) {
-            var accounts = result[domain];
+          chrome.storage.local.get(["accounts"], function (result) {
+            var accounts = result["accounts"][domain];
             if(accounts){
               var type = 'openDialogBox'; // 1 is openDialogBox, 2 is confirmChangePasswordBox, 3 is nothing
               for(var i=0, len=accounts.length; i < len; i++){
@@ -130,9 +130,9 @@ var sendMessageFunc = function(tabId, changeInfo, tab){
         client.sendMsg();
       }else{
         var domain = client.domain;
-        chrome.storage.local.get([domain], function (result) {
-          if(result[domain]){
-            client.sendMsg({ action: "fillAccount", accountData: result[domain] });
+        chrome.storage.local.get(["accounts"], function(result){
+          if(result["accounts"] && result["accounts"][domain]){
+            client.sendMsg({ action: "fillAccount", accountData: result["accounts"][domain] });
           }
         });
       }

@@ -12,7 +12,7 @@ var Form = function(form){
 
 Form.prototype = {
   setInitValue: function(){
-    this.actionUrl = this.formData.attr('action');
+    this.actionUrl = this.formData.getAttribute('action');
     this.setSubmitBtn();
     this.setElementStr();
     this.checkType();
@@ -29,17 +29,17 @@ Form.prototype = {
     this.url = location.href;
   },
   setSubmitBtn: function(){
-    if(this.formData.find('[type="submit"]').length > 0){
-      this.submitBtn = this.formData.find('[type="submit"]')[0];
+    if(this.formData.querySelector('[type="submit"]')){
+      this.submitBtn = this.formData.querySelector('[type="submit"]');
     }
     if(!this.submitBtn){
-      if(this.formData.find('button').length > 0){
-        this.submitBtn = this.formData.find('button')[this.formData.find('button').length-1];
+      if(this.formData.getElementsByTagName('button')){
+        this.submitBtn = this.formData.getElementsByTagName('button');
       }
     }
     if(!this.submitBtn){
-      if(this.formData.find('input[type="button"]').length > 0){
-        this.submitBtn = this.formData.find('button')[this.formData.find('input[type="button"]').length-1];
+      if(this.formData.querySelector('input[type="button"]')){
+        this.submitBtn = this.formData.getElementsByTagName('button');
       }
     }
   },
@@ -74,8 +74,17 @@ Form.prototype = {
     }
 
     if(!this.type){
-      var singUpTextArray = ["sign up", "signup", "Create a new account", "登録", "作成", "registration", "entry", "register"];
-      for(var i=0; i < singUpTextArray.length; i++){
+      var singUpTextArray = [
+        "sign up",
+        "signup",
+        "Create a new account",
+        "登録",
+        "作成",
+        "registration",
+        "entry",
+        "register"
+      ];
+      for(var i=0, len=singUpTextArray.length; i < len; i++){
         re = new RegExp(singUpTextArray[i], "i");
         if(this.elementStr.match(re)){
           this.type = 'signUp';
@@ -84,7 +93,7 @@ Form.prototype = {
       }
       if(!this.type){
         var signInTextArray = ["sign in", "signin", "login", "log in", "ログイン"];
-        for(var i=0; i < signInTextArray.length; i++){
+        for(var i=0, len=signInTextArray.length; i < len; i++){
           re = new RegExp(signInTextArray[i], "i");
           if(this.elementStr.match(re)){
             this.type = 'signIn';
@@ -95,22 +104,22 @@ Form.prototype = {
     }
   },
   setPasswordField: function(){
-    var passwordField = this.formData.find('[type="password"]');
-    if(passwordField.length > 0){
-      if(passwordField.length > 1){ //confirm_form input
-        this.passwordConfirmElementName = passwordField[1].name;
+    var passwordFields = this.formData.querySelectorAll('[type="password"]');
+    if(passwordFields.length > 0){
+      if(passwordFields.length > 1){ //confirm_form input
+        this.passwordConfirmElementName = passwordFields[1].name;
       }
-      this.passwordElementName = passwordField.attr('name');
+      this.passwordElementName = passwordFields[0].name;
     }else{
-      var textField = this.formData.find('input[type="text"]');
-      if(textField.length > 0){
-        for(var i=0; i < textField.length; i++){
-          if(judgingPasswordForm(textField[i])){
-            this.passwordElementName = textField[i].name;
+      var textFields = this.formData.querySelectorAll('input[type="text"]');
+      if(textFields.length > 0){
+        for(var i=0, len = textFields.length; i < len; i++){
+          if(judgingPasswordForm(textFields[i])){
+            this.passwordElementName = textFields[i].name;
             continue;
           }
-          if(this.passwordElementName && judgingPasswordForm(textField[i])){
-            form.passwordConfirmElementName = textField[i].name;
+          if(this.passwordElementName && judgingPasswordForm(textFields[i])){
+            form.passwordConfirmElementName = textFields[i].name;
             break;
           }
         }
@@ -118,28 +127,28 @@ Form.prototype = {
     }
   },
   setLoginIdField: function(){
-    var mailField = this.formData.find('[type="email"]');
-    var textField = this.formData.find('[type="text"]');
+    var mailField = this.formData.querySelector('[type="email"]');
+    var textFields = this.formData.querySelectorAll('[type="text"]');
 
     //loginIdElementNameに関しては少しロジックを入れる予定
-    if(mailField.length > 0){
-      this.loginIdElementName = mailField.attr('name');
-    }else if(textField.length > 0){
+    if(mailField){
+      this.loginIdElementName = mailField.name;
+    }else if(textFields.length > 0){
       var mailId, userId, nameId, loginId;
-      for(var i=0; i < textField.length; i++){
+      for(var i=0, len=textFields.length; i < len; i++){
         var elementStr = "";
-        elementStr += textField[i].name;
-        elementStr += textField[i].id;
-        elementStr += textField[i].className;
+        elementStr += textFields[i].name;
+        elementStr += textFields[i].id;
+        elementStr += textFields[i].className;
 
         if(elementStr.match(/(.+)?mail(.)?/)){
-          mailId = textField[i].name;
+          mailId = textFields[i].name;
         }else if(elementStr.match(/(.+)?user(.+)?id(.)?/)){
-          userId = textField[i].name;
+          userId = textFields[i].name;
         }else if(elementStr.match(/(.+)?name(.+)?/)){
-          nameId = textField[i].name;
+          nameId = textFields[i].name;
         }else if(elementStr.match(/(.+)?login(.+)?/)){
-          loginId = textField[i].name;
+          loginId = textFields[i].name;
         }
       }
       if(mailId){

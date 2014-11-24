@@ -1,45 +1,62 @@
-$(function(){
+document.addEventListener('DOMContentLoaded', function () {
 
   var client = new popupClient();
   var accountLists = [];
 
-  var updateAccountLists = function(){
-    $('tr.account').each(function(){
+  client.refresh(accountLists, function(accountLists){
+    var accountDoms = document.getElementsByClassName('account');
+    for(var i=0, len=accountDoms.length; i < len; i++){
       var accountList = new AccountList();
-      var _self = $(this);
-      accountList.url = _self.find('input.loginUrl').val();
-      accountList.loginId = _self.find('input.loginId').val();
-      accountList.password = _self.find('input.password').val();
+      var _self = accountDoms[i];
+      accountList.url = _self.querySelector('input.loginUrl').value;
+      accountList.loginId = _self.querySelector('input.loginId').value;
+      accountList.password = _self.querySelector('input.password').value;
       accountLists.push(accountList);
-    });
-  }
-
-  $.when(client.refresh()).done(setTimeout(updateAccountLists, 100));
-
-  $(document).on('click', 'button.removeBtn', function(){
-    var index = $('button.removeBtn').index($(this));
-    accountLists[index].remove();
+    }
   });
 
-  $(document).on('click', 'button.editBtn', function(){
+  document.addEventListener('click', function (e) {
+    var className = e.target.className;
+    if(className === 'loginBtn'){
+      var index = indexByClassName(e.target);
+      var account = accountLists[index];
+      account.login();
+    }else if(className === 'inputBtn'){
+      var index = indexByClassName(e.target);
+      var account = accountLists[index];
+      account.input();
+    }
   });
 
-  $(document).on('click', 'button.loginBtn', function(){
-    var index = $('button.loginBtn').index($(this));
-    var account = accountLists[index];
-    chrome.tabs.create({ 'url': account.url }, function(tab){
-      chrome.runtime.sendMessage({action: "autoLogin", loginData: account}, function(){});
-    });
+  document.addEventListener('click', function (e){
+    if(e.target.id === 'storageRefresh'){
+      chrome.runtime.sendMessage({ action: "storageRefresh" }, function(){});
+    }
   });
-
-  $(document).on('click', 'button.inputBtn', function(){
-    var index = $('button.inputBtn').index($(this));
-    var account = accountLists[index];
-    chrome.runtime.sendMessage({action: "analogLogin", loginData: account}, function(){});
-  });
-
-  $('button#storageRefresh').click(function(){
-    chrome.runtime.sendMessage({ action: "storageRefresh" }, function(){});
-  });
-
 });
+
+var Closest = function(element, tagname) {
+  tagname = tagname.toLowerCase();
+  do {
+    if(element.nodeName.toLowerCase() === tagname){
+      return element;
+    }
+  }while(element = element.parentNode)
+  return null;
+};
+
+function indexByClassName(element) {
+  var elements = document.getElementsByClassName(element.className);
+  var num = 0;
+  for(var i=0, len=elements.length; i<len; i++){
+    if(elements[i]===element){
+      return num;
+    }else{
+      num++;
+    }
+  }
+  return -1;
+}
+
+function updateAccountLists(accountLists){
+}
