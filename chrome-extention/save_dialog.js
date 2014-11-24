@@ -76,7 +76,7 @@ saveDialog.prototype = {
     var url = tempData.url;
     var groupId = tempData.groupId;
     var storageData = {};
-    var storage_client = new StorageClient();
+    var storageClient = new StorageClient();
     chrome.storage.local.get(["accounts"], function (result){
       var accounts = (result["accounts"])? result["accounts"] : [];
       var accountInfos = (result["accounts"][domain])? result["accounts"][domain] : [];
@@ -98,7 +98,7 @@ saveDialog.prototype = {
         }
       }
       accounts[domain] = accountInfos;
-      storage_client.save(accounts);
+      storageClient.save(accounts);
     });
 
     chrome.storage.local.get(['userInfo'], function(result){
@@ -112,7 +112,7 @@ saveDialog.prototype = {
         group_id: groupId,
         api_key: result['userInfo'].apiKey
       }
-      request.open('POST', 'http://localhost:3000/api/v1/accounts', true);
+      request.open('POST', 'https://cushy-staging.herokuapp.com/api/v1/accounts', true);
       request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
       request.send(EncodeHTMLForm(data));
     });

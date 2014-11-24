@@ -4,7 +4,7 @@ chrome.browserAction.onClicked.addListener(function(tab){
 
 var tempData = new TempStorageData();
 var client = new Client();
-var storage_client = new StorageClient();
+var storageClient = new StorageClient();
 
 var updateClientFunc = function(tabId, changeInfo, tab){
   if(changeInfo.status === "complete"){
@@ -109,7 +109,7 @@ var sendMessageFunc = function(tabId, changeInfo, tab){
                     type = 'confirmChangePasswordBox';
                   }
                   if(accounts[i].url != tempData.url){
-                    storage_client.updateUrl(domain, tempData.url);
+                    storageClient.updateUrl(domain, tempData.url);
                   }
                   break;
                 }

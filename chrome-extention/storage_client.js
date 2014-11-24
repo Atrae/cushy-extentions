@@ -1,7 +1,9 @@
 var StorageClient = function(){}
 StorageClient.prototype = {
   save: function(data){
-    chrome.storage.local.set(data, function(result){
+    var storageAccounts = {};
+    storageAccounts['accounts'] = data;
+    chrome.storage.local.set(storageAccounts, function(result){
       if(chrome.extension.lastError !== undefined) {
         console.log('failed');
       }else{

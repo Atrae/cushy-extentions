@@ -5,7 +5,7 @@ User.prototype = {
     var loginId = mail;
     var password = password;
     var request = new XMLHttpRequest();
-    request.open("POST", "http://localhost:3000/api/v1/users/login", true);
+    request.open("POST", "https://cushy-staging.herokuapp.com/api/v1/users/login", true);
     request.setRequestHeader( "Content-type", "application/x-www-form-urlencoded" ); // only for POST requests
     request.onreadystatechange = function () {
       if(request.readyState != 4 || request.status != 201){
