@@ -36,7 +36,7 @@ Client.prototype = {
       chrome.storage.local.get(['userInfo'], function(result){
         var request = new XMLHttpRequest();
         var params = "user_id="+result['userInfo'].userId+"&api_key="+result['userInfo'].apiKey
-        request.open("GET", "http://localhost:3000/api/v1/items?"+params, true);
+        request.open("GET", "https://cushy-staging.herokuapp.com/api/v1/items?"+params, true);
         request.onreadystatechange = function () {
           if(request.readyState != 4 || request.status != 200){
             // fail function
