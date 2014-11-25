@@ -155,6 +155,18 @@ var analogLoginFunc = function(request,sender,sendResponse){
 }
 chrome.runtime.onMessage.addListener(analogLoginFunc);
 
+var autoLoginFunc = function(request,sender,sendResponse){
+  if(request.action === 'fillAccountCheck'){
+    chrome.storage.local.get(["accounts"], function(result){
+      var domain = client.domain;
+      if(result["accounts"] && result["accounts"][domain]){
+        client.sendMsg({ action: "fillAccount", accountData: result["accounts"][domain] });
+      }
+    });
+  }
+}
+chrome.runtime.onMessage.addListener(autoLoginFunc);
+
 var changeClientData = function(request,sender,sendResponse){
   if(request.action === "dialogClose"){
     client.toCloseDialog();

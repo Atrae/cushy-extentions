@@ -6,6 +6,25 @@ var saveDialog = new saveDialog();
 //  console.dir(result);
 //});
 
+var observer = new MutationObserver(function(mutations){
+  for(var i=0, len=mutations.length; i < len; i++){
+    if(mutations[i].addedNodes.length > 0){
+      var node = mutations[i].addedNodes[0];
+      var formDom = node.querySelector('form');
+      if(formDom){
+        var form = new Form(formDom);
+        form.setInitValue();
+        forms.push(form);
+        if(form.type === "signUp") setRandomPassword(form);
+        if(form.type === "signIn"){
+          chrome.runtime.sendMessage({ action: "fillAccountCheck" });
+        }
+      }
+    }
+  }
+});
+observer.observe(document.body, { childList: true });
+
 var dialogFunction = function(msg, sender, sendResponse) {
   var tempData = msg.tempData;
   if(msg.action === "openDialogBox"){
