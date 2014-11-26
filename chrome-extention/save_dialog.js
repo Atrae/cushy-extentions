@@ -101,6 +101,7 @@ saveDialog.prototype = {
       storageClient.save(accounts);
     });
 
+    var requestType = (submitType === 'changePassword')? 'PUT' : 'POST';
     chrome.storage.local.get(['userInfo'], function(result){
       var request = new XMLHttpRequest();
       var data = {
@@ -112,7 +113,7 @@ saveDialog.prototype = {
         group_id: groupId,
         api_key: result['userInfo'].apiKey
       }
-      request.open('POST', 'https://cushy-staging.herokuapp.com/api/v1/accounts', true);
+      request.open(requestType, 'https://cushy-staging.herokuapp.com/api/v1/accounts', true);
       request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
       request.send(EncodeHTMLForm(data));
     });
