@@ -76,7 +76,9 @@ function importGroupsFromServer(groups){
     var name = group.name;
     storageData[name] = (storageData[name])? storageData[name] : [];
     storageData[name].push({
-      'id': group.id
+      'id': group.id,
+      'company_id': group.company_id,
+      'company_name': (group.company_name)? group.company_name : 'Private'
     });
   });
   storageGroupData['groups'] = storageData;
