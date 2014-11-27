@@ -33,9 +33,9 @@ var dialogFunction = function(msg, sender, sendResponse) {
       saveDialog.message = tempData.domain +"での"+ tempData.loginId +"のアカウントを登録しますか？";
 
       chrome.storage.local.get(['groups'], function(result){
-        saveDialog.select_options += "<option group-id=''>For Me</option>";
+        saveDialog.select_options += "<option group-id=''>【Private】For Me</option>";
         for(key in result['groups']){
-          saveDialog.select_options += "<option group-id='"+result['groups'][key][0].id+"'>For "+ key +"</option>";
+          saveDialog.select_options += "<option group-id='"+result['groups'][key][0].id+"'>【"+ result['groups'][key][0].company_name +"】For "+ key +"</option>";
         }
         saveDialog.insert();
       });
