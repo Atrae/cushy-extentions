@@ -111,7 +111,8 @@ saveDialog.prototype = {
         url: url,
         name: domain,
         group_id: groupId,
-        api_key: result['userInfo'].apiKey
+        api_key: result['userInfo'].apiKey,
+        default_flag: (groupId === '')? true : false
       }
       request.open(requestType, 'https://cushy-staging.herokuapp.com/api/v1/accounts', true);
       request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
