@@ -6,6 +6,18 @@ var tempData = new TempStorageData();
 var client = new Client();
 var storageClient = new StorageClient();
 
+var openLoginFormLogic = function(tabId, changeInfo, tab){
+  if(changeInfo.status === "complete"){
+    chrome.storage.local.get(['userInfo'], function (result) {
+      if(!result['userInfo'] && !tab.url.match(/login\.html/)){
+        openLoginForm();
+      }
+    });
+  }
+}
+chrome.tabs.onUpdated.addListener(openLoginFormLogic);
+
+
 var updateClientFunc = function(tabId, changeInfo, tab){
   if(changeInfo.status === "complete"){
     client.tabId = tabId;
@@ -143,7 +155,7 @@ chrome.tabs.onUpdated.addListener(sendMessageFunc);
 
 var autoLoginFunc = function(request,sender,sendResponse){
   if(request.action === 'autoLogin'){
-    client.msg = { action: "autoLogin", accountData: request.loginData};
+    client.msg = { action: 'autoLogin', accountData: request.loginData};
   }
 }
 chrome.runtime.onMessage.addListener(autoLoginFunc);
