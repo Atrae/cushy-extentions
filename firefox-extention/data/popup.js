@@ -1,9 +1,10 @@
-document.addEventListener('DOMContentLoaded', function () {
+var client = new PopupClient();
+var accountLists = [];
 
-  var client = new popupClient();
-  var accountLists = [];
-
+self.port.on("show", function(elementContent) {
+  client.accounts = elementContent;
   client.refresh(accountLists, function(accountLists){
+    console.log("ssssssssssssss");
     var accountDoms = document.getElementsByClassName('account');
     for(var i=0, len=accountDoms.length; i < len; i++){
       var accountList = new AccountList();
@@ -14,25 +15,23 @@ document.addEventListener('DOMContentLoaded', function () {
       accountLists.push(accountList);
     }
   });
+});
 
-  document.addEventListener('click', function (e) {
-    var className = e.target.className;
-    if(className === 'loginBtn'){
-      var index = indexByClassName(e.target);
-      var account = accountLists[index];
-      account.login();
-    }else if(className === 'inputBtn'){
-      var index = indexByClassName(e.target);
-      var account = accountLists[index];
-      account.input();
-    }
-  });
+document.addEventListener('click', function (e) {
+  var className = e.target.className;
+  if(className === 'loginBtn'){
+    var index = indexByClassName(e.target);
+    var account = accountLists[index];
+    account.login();
+  }else if(className === 'inputBtn'){
+    var index = indexByClassName(e.target);
+    var account = accountLists[index];
+    account.input();
+  }
+});
 
-  document.addEventListener('click', function (e){
-    if(e.target.id === 'storageRefresh'){
-      chrome.runtime.sendMessage({ action: "storageRefresh" }, function(){});
-    }
-  });
+document.addEventListener('click', function (e){
+  if(e.target.id === 'storageRefresh') self.port.emit("storageRefresh");
 });
 
 var Closest = function(element, tagname) {

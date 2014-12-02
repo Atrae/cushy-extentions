@@ -1,5 +1,5 @@
 var Client = ( function(){
-  
+
   this.tabId;
   this.domain;
   this.url;
@@ -7,6 +7,10 @@ var Client = ( function(){
   this.openDialogFlg = false;
   this.msg;
   this.lastUpdatedAt;
+
+  var storage = require("sdk/simple-storage").storage;
+
+  var Request = require("sdk/request").Request;
 
   this.updateUrl = function(url){
     this.beforeUrl = this.url;
@@ -31,35 +35,31 @@ var Client = ( function(){
     var tenMinutesAgo = new Date();
     tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes()-10);
     var _self = this;
-
     if(_self.lastUpdatedAt === undefined || _self.lastUpdatedAt < tenMinutesAgo || analogFlg === true){
-      chrome.storage.local.get(['userInfo'], function(result){
-        var request = new XMLHttpRequest();
+      if(storage["userInfo"]){
+        var result = storage;
         var params = "user_id="+result['userInfo'].userId+"&api_key="+result['userInfo'].apiKey
-        request.open("GET", "https://cushy-staging.herokuapp.com/api/v1/items?"+params, true);
-        request.onreadystatechange = function () {
-          if(request.readyState != 4 || request.status != 200){
-              // fail function
-          }else{
-            var data = JSON.parse(request.responseText);
-            importAccountsFromServer(data['accounts']);
-            importGroupsFromServer(data['groups']);
-            _self.lastUpdatedAt = new Date();
+        Request({
+          url: "https://cushy-staging.herokuapp.com/api/v1/items?"+params,
+          onComplete: function (response) {
+            if(response.json["result"] === true){
+              var data = response.json;
+              importAccountsFromServer(data['accounts'], storage);
+              importGroupsFromServer(data['groups'], storage);
+              _self.lastUpdatedAt = new Date();
+            }
           }
-        };
-        request.send();
-      });
+        }).get();
+      }
     }
   }
-
   return this;
 }());
 
 exports.Client = Client;
 
-function importAccountsFromServer(accounts){
+function importAccountsFromServer(accounts, storage){
   var storageData = {};
-  var storageAccountData = {};
   accounts.forEach(function(account){
     var name = account.name;
     storageData[name] = (storageData[name])? storageData[name] : [];
@@ -69,13 +69,11 @@ function importAccountsFromServer(accounts){
       'loginUrl': account.url
     });
   });
-  storageAccountData['accounts'] = storageData;
-  setStorageData(storageAccountData);
+  storage['accounts'] = storageData;
 }
 
-function importGroupsFromServer(groups){
+function importGroupsFromServer(groups, storage){
   var storageData = {};
-  var storageGroupData = {};
   groups.forEach(function(group){
     var name = group.name;
     storageData[name] = (storageData[name])? storageData[name] : [];
@@ -85,16 +83,5 @@ function importGroupsFromServer(groups){
       'company_name': (group.company_name)? group.company_name : 'Private'
     });
   });
-  storageGroupData['groups'] = storageData;
-  setStorageData(storageGroupData);
-}
-
-function setStorageData(storageData){
-  chrome.storage.local.set(storageData, function(result){
-    if(chrome.extension.lastError !== undefined) {
-      console.log('failed');
-    }else{
-      console.log('ok!save');
-    }
-  });
+  storage['groups'] = storageData;
 }

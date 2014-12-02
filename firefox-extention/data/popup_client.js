@@ -1,9 +1,11 @@
-var popupClient = function(){
+var PopupClient = function(){
+  this.accounts;
 }
 
-popupClient.prototype = {
+PopupClient.prototype = {
   refresh: function(accountLists, callback){
-    chrome.storage.local.get(["accounts"], function(result){
+    var result = {};
+      result["accounts"] = this.accounts;
       var fragment = document.createDocumentFragment();
       for(url in result["accounts"]){
         var accounts = result["accounts"][url];
@@ -59,6 +61,6 @@ popupClient.prototype = {
       }
       document.getElementById('registedAccountList').appendChild(fragment);
       if(callback) setTimeout(callback(accountLists), 1000);
-    });
+
   }
 }

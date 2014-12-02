@@ -1,10 +1,10 @@
-var saveDialog = function(){
+var SaveDialog = function(){
   this.message;
   this.select_options = '';
   this.button;
 }
 
-saveDialog.prototype = {
+SaveDialog.prototype = {
   insert: function(){
     var dialogParent = document.createElement("div");
     dialogParent.id = "cushy-ext-dialog";

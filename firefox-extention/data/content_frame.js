@@ -1,6 +1,7 @@
-var storage = require("sdk/simple-storage").storage;
+//var storage = require("sdk/simple-storage").storage;
 
-var saveDialog = new saveDialog();
+//console
+var saveDialog = new SaveDialog();
 
 var observer = new MutationObserver(function(mutations){
   for(var i=0, len=mutations.length; i < len; i++){
@@ -22,6 +23,7 @@ var observer = new MutationObserver(function(mutations){
 observer.observe(document.body, { childList: true });
 
 self.port.on("fillAccount", function(accounts) {
+  window.alert("aaa");
   var submitBtn, loginIdElementName, passWordElementName;
   for(var i=0, len=accounts.length; i < len; i++){
     saveDialog.select_options += "<option login-id='"+i+"'>"+ accounts[i].loginId +"</option>";
@@ -104,7 +106,7 @@ self.port.on("autoLogin", function(account) {
       }
     }
   }
-}
+});
 
 document.addEventListener('click', function(e){
   if(e.target.className ==='cushy-ext-close-js'){
@@ -119,7 +121,6 @@ for(var i=0,len=formDoms.length; i<len; i++){
   var form = new Form(formDom);
   form.setInitValue();
   forms.push(form);
-  console.dir(form);
   if(form.type === "signUp"){
     setRandomPassword(form);
   }

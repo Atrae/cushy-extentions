@@ -24,5 +24,6 @@ textArea.addEventListener('keyup', function onkeyup(event) {
 // Set the focus to the text area so the user can
 // just start typing.
 self.port.on("show", function onShow() {
+  console.log("receive");
   textArea.focus();
 });
