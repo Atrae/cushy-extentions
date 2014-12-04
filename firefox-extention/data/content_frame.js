@@ -23,7 +23,6 @@ var observer = new MutationObserver(function(mutations){
 observer.observe(document.body, { childList: true });
 
 self.port.on("fillAccount", function(accounts) {
-  window.alert("aaa");
   var submitBtn, loginIdElementName, passWordElementName;
   for(var i=0, len=accounts.length; i < len; i++){
     saveDialog.select_options += "<option login-id='"+i+"'>"+ accounts[i].loginId +"</option>";
@@ -57,13 +56,15 @@ self.port.on("fillAccount", function(accounts) {
   }
 });
 
-self.port.on("openDialogBox", function(tempData) {
+self.port.on("openDialogBox", function(data) {
+  var tempData = data.tempData;
   if(tempData.domain && tempData.loginId && tempData.password){
+    var groups = data.groups;
     saveDialog.setSubmitMsg("登録する");
     saveDialog.message = tempData.domain +"での"+ tempData.loginId +"のアカウントを登録しますか？";
     saveDialog.select_options += "<option group-id=''>【Private】For Me</option>";
-    for(key in storage.groups){
-      saveDialog.select_options += "<option group-id='"+storage.groups[key][0].id+"'>【"+ storage.groups[key][0].company_name +"】For "+ key +"</option>";
+    for(key in groups){
+      saveDialog.select_options += "<option group-id='"+groups[key][0].id+"'>【"+ groups[key][0].company_name +"】For "+ key +"</option>";
     }
     saveDialog.insert();
     document.addEventListener('click', function(e){
@@ -93,7 +94,8 @@ self.port.on("noLoginNotification", function() {
   saveDialog.insert();
 });
 
-self.port.on("autoLogin", function(account) {
+
+var loginFunc = function(account){
   var account = account;
   for(var i=0, len = forms.length; i < len; i++){
     if(forms[i].type === "signIn"){
@@ -106,11 +108,20 @@ self.port.on("autoLogin", function(account) {
       }
     }
   }
+}
+
+self.port.on("autoLogin", function(account) {
+  loginFunc(account);
+});
+
+self.port.on("analogLogin", function(account) {
+  loginFunc(account);
 });
 
 document.addEventListener('click', function(e){
   if(e.target.className ==='cushy-ext-close-js'){
     saveDialog.close();
+    self.port.emit("dialogClose");
   }
 });
 
@@ -129,7 +140,8 @@ for(var i=0,len=formDoms.length; i<len; i++){
 document.addEventListener('submit', function(e){
   if(e.target.tagName ==='FORM'){
     var index = indexInElements(e.target);
-    self.port.emit(forms[index].type, {
+    var type = (forms[index].type === "signIn" || forms[index].type === "signUp")? forms[index].type : "etc"
+    self.port.emit(type, {
       passwordElementName: forms[index].passwordElementName,
       loginIdElementName: forms[index].loginIdElementName,
       url: forms[index].url

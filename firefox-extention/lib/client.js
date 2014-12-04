@@ -9,7 +9,6 @@ var Client = ( function(){
   this.lastUpdatedAt;
 
   var storage = require("sdk/simple-storage").storage;
-
   var Request = require("sdk/request").Request;
 
   this.updateUrl = function(url){

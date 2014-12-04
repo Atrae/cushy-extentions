@@ -10,9 +10,11 @@ var TempStorageData = ( function(){
   this.type;
   this.url;
   this.groupId;
+  this.postData;
+  this.postRawData;
 
-  this.setFromRequest = function(request){
-    this.type = request.action;
+  this.setFromRequest = function(type, request){
+    this.type = type;
     this.loginElementName = request.loginIdElementName;
     this.passwordElementName = request.passwordElementName;
     this.url = request.url;

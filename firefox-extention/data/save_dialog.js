@@ -68,55 +68,18 @@ SaveDialog.prototype = {
   },
   submit: function(tempData, submitType){
     //localへの保存 + サーバへの保存
-    var domain = tempData.domain;
-    var loginElementName = tempData.loginElementName;
-    var loginId = tempData.loginId[0];
-    var passwordElementName = tempData.passwordElementName;
-    var password = tempData.password[0];
-    var url = tempData.url;
-    var groupId = tempData.groupId;
     var storageData = {};
-    var storageClient = new StorageClient();
-    chrome.storage.local.get(["accounts"], function (result){
-      var accounts = (result["accounts"])? result["accounts"] : [];
-      var accountInfos = (result["accounts"][domain])? result["accounts"][domain] : [];
-      if(submitType === 'save'){ //save ver.
-        accountInfos.push({
-          'loginElementName': loginElementName,
-          'loginId': loginId,
-          'passwordElementName': passwordElementName,
-          'password': password,
-          'url': url
-        })
-      }else if(submitType === 'changePassword'){
-        for(var i=0; i < accountInfos.length; i++){
-          if(loginId === accountInfos[i].loginId){
-            accountInfos[i].password = password;
-            accountInfos[i].passwordElementName = passwordElementName;
-            accountInfos[i].url = url;
-          }
-        }
-      }
-      accounts[domain] = accountInfos;
-      storageClient.save(accounts);
-    });
-
-    var requestType = (submitType === 'changePassword')? 'PUT' : 'POST';
-    chrome.storage.local.get(['userInfo'], function(result){
-      var request = new XMLHttpRequest();
-      var data = {
-        user_id: result['userInfo'].userId, //認証方法は別途検討
-        login_id: loginId,
-        password: password,
-        url: url,
-        name: domain,
-        group_id: groupId,
-        api_key: result['userInfo'].apiKey
-      }
-      request.open(requestType, 'https://cushy-staging.herokuapp.com/api/v1/accounts', true);
-      request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-      request.send(EncodeHTMLForm(data));
-    });
+    var data = {
+      data: {
+        loginId: tempData.loginId,
+        password: tempData.password,
+        url: tempData.url,
+        groupId: tempData.groupId,
+        domain: tempData.domain
+      },
+      submitType: submitType
+    }
+    self.port.emit("saveAccount", data);
     this.close();
   }
 }

@@ -1,5 +1,7 @@
 var StorageClient = ( function(){
 
+  var storage = require("sdk/simple-storage").storage;
+
   this.save = function(data){
     var storageAccounts = {};
     storageAccounts['accounts'] = data;

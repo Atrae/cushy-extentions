@@ -4,7 +4,6 @@ var accountLists = [];
 self.port.on("show", function(elementContent) {
   client.accounts = elementContent;
   client.refresh(accountLists, function(accountLists){
-    console.log("ssssssssssssss");
     var accountDoms = document.getElementsByClassName('account');
     for(var i=0, len=accountDoms.length; i < len; i++){
       var accountList = new AccountList();
