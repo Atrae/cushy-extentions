@@ -16,7 +16,7 @@ User.prototype = {
         document.getElementById('errorNotification').style.display='none';
         if(data['result'] === true){
           document.getElementById('loginBlock').style.display='none';
-          document.getElementById('completeImage').style.display='block';
+          document.getElementById('loginComplete').style.display='block';
           var userInfo = {
             'userId': data.user_data.user_id,
             'mail': mail,

@@ -31,9 +31,8 @@ var dialogFunction = function(msg, sender, sendResponse) {
     if(tempData.domain && tempData.loginId && tempData.password){
       saveDialog.setSubmitMsg("登録する");
       saveDialog.message = tempData.domain +"での"+ tempData.loginId +"のアカウントを登録しますか？";
-
       chrome.storage.local.get(['groups'], function(result){
-        saveDialog.select_options += "<option group-id=''>【Private】For Me</option>";
+        saveDialog.select_options += "<option group-id=''>【PRIVATE GROUP】For only me</option>";
         for(key in result['groups']){
           saveDialog.select_options += "<option group-id='"+result['groups'][key][0].id+"'>【"+ result['groups'][key][0].company_name +"】For "+ key +"</option>";
         }

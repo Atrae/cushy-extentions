@@ -62,7 +62,7 @@ self.port.on("openDialogBox", function(data) {
     var groups = data.groups;
     saveDialog.setSubmitMsg("登録する");
     saveDialog.message = tempData.domain +"での"+ tempData.loginId +"のアカウントを登録しますか？";
-    saveDialog.select_options += "<option group-id=''>【Private】For Me</option>";
+    saveDialog.select_options += "<option group-id=''>【PRIVATE GROUP】For only me</option>";
     for(key in groups){
       saveDialog.select_options += "<option group-id='"+groups[key][0].id+"'>【"+ groups[key][0].company_name +"】For "+ key +"</option>";
     }
