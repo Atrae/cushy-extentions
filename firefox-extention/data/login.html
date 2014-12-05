@@ -1,5 +1,7 @@
-<html>
+<!DOCTYPE html>
+<html lang="ja">
   <head>
+    <meta charset="UTF-8">
     <title>Cushy</title>
       <link href='http://fonts.googleapis.com/css?family=Signika:400,700' rel='stylesheet' type='text/css'>
       <style>
@@ -56,12 +58,18 @@
             width: 100px;
             height: 100px;
             left : 100px;
+          }
+          #loginComplete {
             display: none;
           }
           #errorNotification {
             background-color: #FDC2C2;
             height: 50px;
             display: none;
+          }
+          #loginComplete p {
+              font-size: 14px;
+              color: black;
           }
       </style>
       <script src="login.js"></script>
@@ -86,8 +94,14 @@
             </p>
             <input type="button" id="loginSubmit" value="submit"/>
           </form>
+          <a href="https://cushy-staging.herokuapp.com/user/reset_token" target="_blank">forgot password</a> /
+          <a href="https://cushy-staging.herokuapp.com/sign_up" target="_blank">Join cushy!</a>
         </div>
       </div>
-      <img id="completeImage" src="images/complete.png">
+      <div id="loginComplete">
+        <p>ログイン完了！</p>
+        <img id="completeImage" src="images/complete.png">
+        <p>cushyでのデータが自動で同期されますので、そのままお使い下さい</p>
+      </div>
     </body>
 </html>
