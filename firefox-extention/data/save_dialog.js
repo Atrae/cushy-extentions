@@ -2,6 +2,7 @@ var SaveDialog = function(){
   this.message;
   this.select_options = '';
   this.button;
+  this.existFlg = false;
 }
 
 SaveDialog.prototype = {
@@ -57,7 +58,10 @@ SaveDialog.prototype = {
     dialogParent2.appendChild(backgroundElement);
     dialogParent.appendChild(dialogParent2);
 
-    document.body.appendChild(dialogParent);
+    if(!this.existFlg){
+      document.body.appendChild(dialogParent);
+      this.existFlg = true;
+    }
   },
   close: function(){
     dialogClose();
