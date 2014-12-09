@@ -2,10 +2,12 @@ var saveDialog = function(){
   this.message;
   this.select_options = '';
   this.button;
+  this.existFlg = false;
 }
 
 saveDialog.prototype = {
   insert: function(){
+
     var dialogParent = document.createElement("div");
     dialogParent.id = "cushy-ext-dialog";
     dialogParent.setAttribute("style", "width: 380px; position: fixed; top: 10px; z-index: 99999; background-color: rgba(17, 31, 52, 0.4); border-radius: 4px; right: 10px;box-shadow: 0 0 5px rgba(55,55,55,0.2);");
@@ -57,7 +59,10 @@ saveDialog.prototype = {
     dialogParent2.appendChild(backgroundElement);
     dialogParent.appendChild(dialogParent2);
 
-    document.body.appendChild(dialogParent);
+    if(!this.existFlg){
+      document.body.appendChild(dialogParent);
+      this.existFlg = true;
+    }
   },
   close: function(){
     dialogClose();
@@ -114,7 +119,7 @@ saveDialog.prototype = {
         api_key: result['userInfo'].apiKey,
         default_flag: (groupId === '')? true : false
       }
-      request.open(requestType, 'https://cushy-staging.herokuapp.com/api/v1/accounts', true);
+      request.open(requestType, 'http://0.0.0.0:3000/api/v1/accounts', true);
       request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
       request.send(EncodeHTMLForm(data));
     });
