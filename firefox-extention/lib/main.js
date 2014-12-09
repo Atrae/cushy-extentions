@@ -234,7 +234,7 @@ tab.on('ready', function(){
 var responseGetObserver =
 {
  observe: function(subject, topic, data) {
-    if (topic == 'http-on-examine-response') {
+    if (topic == 'http-on-examine-response' && !client.domain.match(/cushy/)) {
       if(tempData.postData && tempData.domain === client.domain){
         var password, userId, passwordFormId, mailId, nameId, loginId;
         var postDataHash = tempData.postData;

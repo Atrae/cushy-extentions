@@ -103,7 +103,8 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 var sendMessageFunc = function(tabId, changeInfo, tab){
-  if(changeInfo.status === "complete"){
+  // cushyのurlは弾くように設定
+  if(changeInfo.status === "complete" && !client.url.match(/cushy/)){
     if(client.checkRegisterDialog(tempData)){
       var domain = tempData.domain;
       chrome.storage.local.get(['userInfo'], function (result) {
