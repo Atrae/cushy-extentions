@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <title>Cushy</title>
+      <link href='http://fonts.googleapis.com/css?family=Signika:400,700' rel='stylesheet' type='text/css'>
+      <style>
+          html {
+              height: 370px;
+          }
+          body {
+              height: 100px;
+          }
+          body, h2, h4 {
+              font-family: 'Signika', sans-serif;
+          }
+          #loginBlock {
+              background-color: #888;
+              border: 2px solid black;
+              padding: 5px;
+              text-align: left;
+          }
+          body {
+              margin: 10px;
+              text-align: center;
+              min-width: 250px;
+              min-height: 100px;
+              font-family: 'Signika', sans-serif;
+              color: white;
+          }
+          h2 {
+              font-size: 36px;
+              color: black;
+              margin-bottom: 15px;
+          }
+          h4 {
+              font-size: 22px;
+              text-align: center;
+              margin-bottom: 15px;
+              margin-top: 10px;
+          }
+          .siterow {
+              clear: both;
+          }
+          .sitename {
+              font-size: 20px;
+              float: left;
+              width: 130px;
+              padding-bottom: 5px;
+          }
+          .sitedesc {
+              position: relative;
+              top: 5px;
+              line-height: 20px;
+              font-size: 12px;
+          }
+          #loadingImage, #completeImage {
+            width: 100px;
+            height: 100px;
+            left : 100px;
+          }
+          #loginComplete {
+            display: none;
+          }
+          #errorNotification {
+            background-color: #FDC2C2;
+            height: 50px;
+            display: none;
+          }
+          #loginComplete p {
+              font-size: 14px;
+              color: black;
+          }
+      </style>
+      <script src="login.js"></script>
+      <script src="user.js"></script>
+    </head>
+    <body>
+      <h2>Cushy</h2>
+      <div id="loginBlock">
+        <h4>LOGIN</h4>
+        <div>
+          <div id="errorNotification"></div>
+          <form id="loginForm">
+            <p>
+              <label for="mail">mail</label><br />
+              <input type="text" id="mail" name="mail" size="50" value="" />
+              <div id="testDiv"></div>
+            </p>
+            <p>
+              <label for="password">password</label><br />
+              <input type="password" id="password" name="password" size="50" value="" />
+              <div id="passwordDiv"></div>
+            </p>
+            <input type="button" id="loginSubmit" value="submit"/>
+          </form>
+          <a id="forgetPassword" href="https://cushy-staging.herokuapp.com/user/reset_token" target="_blank">forgot password</a> /
+          <a id="joinCushy" href="https://cushy-staging.herokuapp.com/sign_up" target="_blank">Join cushy!</a>
+        </div>
+      </div>
+      <div id="loginComplete">
+        <p>ログイン完了！</p>
+        <img id="completeImage" src="images/complete.png">
+        <p>cushyでのデータが自動で同期されますので、そのままお使い下さい</p>
+      </div>
+    </body>
+</html>
