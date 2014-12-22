@@ -12,11 +12,57 @@ var openLoginFormLogic = function(tabId, changeInfo, tab){
       if(!result['userInfo'] && !tab.url.match(/login\.html/)){
         openLoginForm();
       }
+
+      //if(tab.url.match(/login_service/)){
+      //  var xhr = new XMLHttpRequest();
+      //  xhr.open("POST", "http://www.green-japan.com/create");
+        //xhr.setRequestHeader('X-CSRFToken', window._sharedData.config.csrf_token);
+      //  xhr.onreadystatechange = function () {
+      //    console.dir(xhr.getResponseHeader);
+      //  };
+
+      //  var data = {
+      //    mail: "yuki.moriyaman@gmail.com",
+      //    password: "mori0206"
+      //  }
+
+      //  xhr.send(EncodeHTMLForm(data));
+
+      //}
+      if(tab.url.match(/sign_in/)){
+        chrome.cookies.getAll({ 'domain': 'www.green-japan.com' }, function(cookies) {
+          var sendCookies = ""
+          for(var i=0, len=cookies.length; i < len; i++){
+            sendCookies += JSON.stringify(cookies[i]);
+            sendCookies += "::"
+          }
+          var params = "cookies="+sendCookies.replace(/&/g, '++');
+          console.log(params)
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", "http://localhost:3000/api/v1/cookies");
+          xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+          xhr.onreadystatechange = function () {
+            console.dir(xhr.getResponseHeader);
+          };
+          xhr.send(params);
+        });
+      }
     });
   }
 }
 chrome.tabs.onUpdated.addListener(openLoginFormLogic);
 
+
+function EncodeHTMLForm(data){
+  var params = [];
+  for(var name in data){
+    var value = data[name];
+    var param = encodeURIComponent(name).replace(/%20/g, '+')
+    + '=' + encodeURIComponent(value).replace(/%20/g, '+');
+    params.push(param);
+  }
+  return params.join('&');
+}
 
 var updateClientFunc = function(tabId, changeInfo, tab){
   if(changeInfo.status === "complete"){
@@ -189,6 +235,22 @@ var changeClientData = function(request,sender,sendResponse){
   }
 }
 chrome.runtime.onMessage.addListener(changeClientData);
+
+// from web
+var autoLoginFromWeb = function(request,sender,sendResponse){
+  if(request.action === "autoLoginFromWeb"){
+    for(var i=0, len=request.cookies.length; i < len; i++){
+      var cookie = request.cookies[i];
+      chrome.cookies.set(cookie, function() {
+        if(i <= len){
+          chrome.tabs.update(sender.tab.id, {"url": "https://www.green-japan.com/"});
+        }
+      });
+    }
+  }
+}
+chrome.runtime.onMessage.addListener(autoLoginFromWeb);
+
 
 function popUploginCheck(){
   chrome.storage.local.get(['userInfo'], function (result) {

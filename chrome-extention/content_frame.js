@@ -143,6 +143,11 @@ document.addEventListener('submit', function(e){
 });
 
 
+window.addEventListener("message", function(event) {
+  // We only accept messages from ourselves
+  chrome.runtime.sendMessage({ action: "autoLoginFromWeb", cookies: event.data });
+}, false);
+
 /*
 var aTagSubmitHandler = function() {
   if(Closest(this, 'form').length > 0){
