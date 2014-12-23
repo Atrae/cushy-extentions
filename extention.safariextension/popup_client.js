@@ -5,9 +5,10 @@ popupClient.prototype = {
   refresh: function(accountLists, callback){
     var accounts = safari.extension.secureSettings.accounts;
     var fragment = document.createDocumentFragment();
+
     for(url in accounts){
-      var accounts = accounts[url];
-      for(var i=0, len=accounts.length; i < len; i++){
+      var targetAccounts = accounts[url];
+      for(var i=0, len=targetAccounts.length; i < len; i++){
         var childFragment = document.createDocumentFragment();
         var accountList = document.createElement("tr");
         accountList.className = "account";
@@ -17,7 +18,7 @@ popupClient.prototype = {
         childFragment.appendChild(accountUrl);
 
         var accoutName = document.createElement("td");
-        accoutName.innerHTML = accounts[i].loginId
+        accoutName.innerHTML = targetAccounts[i].loginId
         childFragment.appendChild(accoutName);
 
         var loginBtnTd = document.createElement("td");
@@ -38,26 +39,27 @@ popupClient.prototype = {
         var inputLoginId = document.createElement("input");
         inputLoginId.className = "loginId";
         inputLoginId.setAttribute('type', 'hidden');
-        inputLoginId.setAttribute('value', accounts[i].loginId);
+        inputLoginId.setAttribute('value', targetAccounts[i].loginId);
         hiddenParamsTd.appendChild(inputLoginId);
 
         var inputLoginUrl = document.createElement("input");
         inputLoginUrl.className = "loginUrl";
         inputLoginUrl.setAttribute('type', 'hidden');
-        inputLoginUrl.setAttribute('value', accounts[i].loginUrl);
+        inputLoginUrl.setAttribute('value', targetAccounts[i].loginUrl);
         hiddenParamsTd.appendChild(inputLoginUrl);
 
         var inputPassword = document.createElement("input");
         inputPassword.className = "password";
         inputPassword.setAttribute('type', 'hidden');
-        inputPassword.setAttribute('value', accounts[i].password);
+        inputPassword.setAttribute('value', targetAccounts[i].password);
         hiddenParamsTd.appendChild(inputPassword);
         childFragment.appendChild(hiddenParamsTd);
         accountList.appendChild(childFragment);
         fragment.appendChild(accountList);
       }
-      document.getElementById('registedAccountList').appendChild(fragment);
-      if(callback) setTimeout(callback(accountLists), 1000);
     }
+    document.getElementById('registedAccountList').innerHTML = "";
+    document.getElementById('registedAccountList').appendChild(fragment);
+    if(callback) setTimeout(callback(accountLists), 1000);
   }
 }

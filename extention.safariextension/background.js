@@ -1,94 +1,52 @@
 safari.application.addEventListener("command", function (evt) {
-  if(evt.command === "cyshyToolbarItem"){
+  if (evt.command === "cyshyToolbarItem") {
     popUploginCheck();
   }
 }, true);
 
 var tempData = new TempStorageData();
 var client = new Client();
-var storageClient = new StorageClient();
+var account = new Account();
 
-var openLoginFormLogic = function(url){
+var openLoginFormLogic = function (url) {
   var userInfo = safari.extension.secureSettings.userInfo;
-  if(!userInfo && !url.match(/login\.html/)){
+  if (!userInfo && !url.match(/login\.html/)) {
     showPopover("loginPopup");
   }
 }
 
-var updateClientFunc = function(url){
-  client.updateUrl(url);
-  client.updateStorageData();
-}
-
+// safari ver.
 var respondToMessage = function(theMessageEvent) {
-  if(theMessageEvent.name === "signIn" || theMessageEvent.name === 'signUp') {
-    tempData.setFromRequest(theMessageEvent);
+  if(theMessageEvent.name === "formSubmit") {
     var sendData = theMessageEvent.message;
-  }else{
-    tempData.type = null;
-  }
-}
-
-safari.application.addEventListener("message",respondToMessage,false);
-
-var callBackFunc = function(details) {
-  if(details.tabId === client.tabId && checkFormPostData(details)){
-    var formData = details.requestBody['formData'];
-    var JformData = JSON.stringify(formData);
-    re = new RegExp(client.domain, "i");
-    if(details.url.match(re)){
-      var password, userId, passwordFormId, mailId, nameId, loginId;
-
-      if(tempData.loginElementName){
-        tempData.loginId = formData[tempData.loginElementName];
-      }
-      if(tempData.passwordElementName){
-        tempData.password = formData[tempData.passwordElementName];
-      }
-
-      if(!tempData.password && JformData.match(/password/i)) {
-        splitData = JformData.split(",");
-        for(var i=0, len=splitData.length; i < len; i++){
-          if(!password && splitData[i].match(/"(.+)?password(.)?"/)){
-            passwordFormId = replaceSymbol(String(splitData[i].match(/"(.+)?password(.)?":/)));
-            password = formData[passwordFormId];
-          }else if(splitData[i].match(/"(.+)?mail(.)?"/)){
-            mailId = replaceSymbol(String(splitData[i].match(/"(.+)?mail(.)?":/)));
-          }else if(splitData[i].match(/"(.+)?user(.+)?id(.)?"/)){
-            userId = replaceSymbol(String(splitData[i].match(/"(.+)?user(.+)?id(.)?":/)));
-          }else if(splitData[i].match(/"(.+)?name(.+)?"/)){
-            nameId = replaceSymbol(String(splitData[i].match(/"(.+)?name(.+)?":/)));
-          }else if(splitData[i].match(/"(.+)?login(.+)?"/)){
-            loginId = replaceSymbol(String(splitData[i].match(/"(.+)?login(.+)?":/)));
-          }
-        }
-        //set password
-        if(password){
-          tempData.password = password;
-          tempData.passwordElementName = passwordFormId;
-        }
-        if(mailId){
-          tempData.loginId = formData[mailId];
-        }else if(userId){
-          tempData.loginId = formData[userId];
-        }else if(nameId){
-          tempData.loginId = formData[nameId];
-        }else if(loginId){
-          tempData.loginId = formData[loginId];
-        }
-      }
-
-      if(tempData.password){
-        tempData.setUrl(client);
-        tempData.tabId = client.tabId;
-        client.toOpenDialog();
-      }
-      console.dir(tempData);
+    if(sendData.password){
+      tempData.setFromRequest(sendData);
+      client.toOpenDialog();
     }
   }
 }
+safari.application.addEventListener("message",respondToMessage,false);
 
-// safari用のpostを抜き出すメソッドをここにかく
+// submit save dialog
+var submitSaveDialog = function(theMessageEvent) {
+  if(theMessageEvent.name === "SubmitSaveDialog") {
+    var tempData = theMessageEvent.message["tempData"];
+    var userInfo = safari.extension.secureSettings.userInfo;
+    var data = {
+      user_id: userInfo.userId, //認証方法は別途検討
+      login_id: tempData.loginId,
+      password: tempData.password,
+      url: tempData.url,
+      name: tempData.domain,
+      group_id: tempData.groupId,
+      api_key: userInfo.apiKey,
+      default_flag: (tempData.groupId === '')? true : false
+    }
+    var requestType = (theMessageEvent.message["requestType"] === 'changePassword')? 'PUT' : 'POST';
+    account.save(data, requestType);
+  }
+}
+safari.application.addEventListener("message", submitSaveDialog, false);
 
 var sendMessageFunc = function(){
   // cushyのurlは弾くように設定
@@ -101,8 +59,8 @@ var sendMessageFunc = function(){
         if(accounts){
           var type = 'openDialogBox'; // 1 is openDialogBox, 2 is confirmChangePasswordBox, 3 is nothing
           for(var i=0, len=accounts.length; i < len; i++){
-            if(accounts[i].loginId === tempData.loginId[0]){
-              if(accounts[i].password === tempData.password[0]){
+            if(accounts[i].loginId === tempData.loginId){
+              if(accounts[i].password === tempData.password){
                 tempData.clear();
               }else{
                 type = 'confirmChangePasswordBox';
@@ -136,27 +94,19 @@ var sendMessageFunc = function(){
   }
 }
 
+// tabupdate event
 safari.application.addEventListener("navigate", function (event) {
-  console.log('//-- Event Data -------------------------------------');
-  console.log(event);
-  console.log(event['target']);
-  console.log('Url: ' + event['target']['url']);
-  console.log('Title: ' + event['target']['title']);
-
   openLoginFormLogic(event['target']['url']);
-  updateClientFunc(event['target']['url']);
+  client.updateUrl(event['target']['url']);
+  client.updateStorageData();
   sendMessageFunc();
-
-  console.log('//-- Tab Data -------------------------------------');
-  console.log('Url: ' + safari.application.activeBrowserWindow.activeTab.url);
-  console.log('Title: ' + safari.application.activeBrowserWindow.activeTab.title);
 }, true);
 
 var autoLoginFunc = function(theMessageEvent) {
   if(theMessageEvent.name === 'autoLogin'){
     client.msg = { action: 'autoLogin', accountData: theMessageEvent.message};
   }else if(theMessageEvent.name === 'fillAccountCheck'){
-    var accounts = localStorage.accounts;
+    var accounts = safari.extension.secureSettings.accounts;
     var domain = client.domain;
     if(accounts && accounts[domain]){
       client.sendMsg("fillAccount", accounts[domain]);
@@ -177,7 +127,6 @@ var changeClientData = function(theMessageEvent) {
     client.toCloseDialog();
     tempData.clear();
   }else if(theMessageEvent.name === "storageRefresh"){
-    alert("storage");
     client.updateStorageData(true);
   }
 }
@@ -188,7 +137,6 @@ function handleMessage(theMessageEvent) {
     safari.application.activeBrowserWindow.openTab().url = msgEvent.message;
   }
 }
-
 safari.application.addEventListener('message', handleMessage, false);
 
 function popUploginCheck(){
@@ -202,15 +150,6 @@ function popUploginCheck(){
 
 function replaceSymbol(str){
   return str.replace(/:(.+)/, '').replace(/"/g, '');
-}
-
-function checkFormPostData(details){
-  var result = false;
-  if(details.method === "POST" && details.type === "main_frame"
-    && details.requestBody && details.requestBody['formData']){
-    result = true;
-  }
-  return result;
 }
 
 function showPopover(popoverId) {

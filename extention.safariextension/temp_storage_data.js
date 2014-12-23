@@ -14,9 +14,10 @@ var TempStorageData = function(){
 TempStorageData.prototype = {
   setFromRequest: function(request){
     this.type = request.action;
-    this.loginElementName = request.loginIdElementName;
-    this.passwordElementName = request.passwordElementName;
+    this.loginId = request.loginId;
+    this.password = request.password;
     this.url = request.url;
+    this.domain = String(request.url).replace(/http(s)?:\/\//, "").split('/')[0];
   },
   clear: function(){
     this.loginId = null;

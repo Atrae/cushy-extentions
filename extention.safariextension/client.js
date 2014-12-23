@@ -22,11 +22,19 @@ Client.prototype = {
   },
   sendMsg: function(msg, data, callbackFunc){
     var _msg = (msg)? msg : this.msg;
-    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(_msg, data);
+    var dataHash = {};
+    if(_msg === "fillAccount"){
+      dataHash = data;
+    }else{
+      dataHash["tempData"] = data;
+      dataHash["groups"] = safari.extension.secureSettings.groups;
+    }
+    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(_msg, dataHash);
     this.msg = null;
   },
   checkRegisterDialog: function(tempData){
-    return (tempData.tabId === this.tabId && tempData.password != '' && tempData.password != null && this.openDialogFlg === true && tempData.url != undefined )? true : false;
+    // for safari custom
+    return (tempData.password != '' && tempData.password != null && this.openDialogFlg === true && tempData.url != undefined )? true : false;
   },
   updateStorageData: function(analogFlg){
     var tenMinutesAgo = new Date();
@@ -39,9 +47,7 @@ Client.prototype = {
         var params = "user_id="+userInfo.userId+"&api_key="+userInfo.apiKey;
         request.open("GET", "http://localhost:3000/api/v1/items?"+params, true);
         request.onreadystatechange = function () {
-          if(request.readyState != 4 || request.status != 200){
-            // fail function
-          }else{
+          if(request.readyState == 4 && request.status == 200){
             var data = JSON.parse(request.responseText);
             importAccountsFromServer(data['accounts']);
             importGroupsFromServer(data['groups']);

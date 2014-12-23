@@ -1,3 +1,4 @@
+
 var saveDialog = new saveDialog();
 
 var observer = new MutationObserver(function(mutations){
@@ -20,12 +21,12 @@ var observer = new MutationObserver(function(mutations){
 observer.observe(document.body, { childList: true });
 
 var dialogFunction = function(theMessageEvent) {
-  var tempData = theMessageEvent.message;
+  var tempData = theMessageEvent.message["tempData"];
   if(theMessageEvent.name === "openDialogBox"){
     if(tempData.domain && tempData.loginId && tempData.password){
       saveDialog.setSubmitMsg("登録する");
       saveDialog.message = tempData.domain +"での"+ tempData.loginId +"のアカウントを登録しますか？";
-      var groups = safari.extension.secureSettings.groups;
+      var groups = theMessageEvent.message["groups"];
       saveDialog.select_options += "<option group-id=''>【PRIVATE GROUP】For only me</option>";
       for(key in groups){
         saveDialog.select_options += "<option group-id='"+groups[key][0].id+"'>【"+ groups[key][0].company_name +"】For "+ key +"</option>";
@@ -119,20 +120,19 @@ for(var i=0,len=formDoms.length; i<len; i++){
   form.setInitValue();
   forms.push(form);
   console.dir(form);
-  if(form.type === "signUp"){
-    setRandomPassword(form);
-  }
+  if(form.type === "signUp") setRandomPassword(form);
 }
 
 document.addEventListener('submit', function(e){
+  alert("submit");
   if(e.target.tagName ==='FORM'){
     var index = indexInElements(e.target);
-
-    safari.self.tab.dispatchMessage(forms[index].type, {
-      action: forms[index].type,
-      passwordElementName: forms[index].passwordElementName,
-      loginIdElementName: forms[index].loginIdElementName,
-      url: forms[index].url
+    var form = forms[index];
+    safari.self.tab.dispatchMessage("formSubmit", {
+      action: form.type,
+      password: form.passwordElementDom.value,
+      loginId: form.loginIdElementDom.value,
+      url: form.url
     });
   }
 });

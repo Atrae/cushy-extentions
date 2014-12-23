@@ -8,6 +8,8 @@ var Form = function(form){
   this.loginIdElementName;
   this.passwordElementName;
   this.passwordConfirmElementName;
+  this.loginIdElementDom;
+  this.passwordElementDom;
 }
 
 Form.prototype = {
@@ -110,12 +112,14 @@ Form.prototype = {
         this.passwordConfirmElementName = passwordFields[1].name;
       }
       this.passwordElementName = passwordFields[0].name;
+      this.passwordElementDom = passwordFields[0];
     }else{
       var textFields = this.formData.querySelectorAll('input[type="text"]');
       if(textFields.length > 0){
         for(var i=0, len = textFields.length; i < len; i++){
           if(judgingPasswordForm(textFields[i])){
             this.passwordElementName = textFields[i].name;
+            this.passwordElementDom = textFields[i];
             continue;
           }
           if(this.passwordElementName && judgingPasswordForm(textFields[i])){
@@ -133,8 +137,10 @@ Form.prototype = {
     //loginIdElementNameに関しては少しロジックを入れる予定
     if(mailField){
       this.loginIdElementName = mailField.name;
+      this.loginIdElementDom = mailField;
+
     }else if(textFields.length > 0){
-      var mailId, userId, nameId, loginId;
+      var mailDom, userDom, nameDom, loginIdDom;
       for(var i=0, len=textFields.length; i < len; i++){
         var elementStr = "";
         elementStr += textFields[i].name;
@@ -142,24 +148,29 @@ Form.prototype = {
         elementStr += textFields[i].className;
 
         if(elementStr.match(/(.+)?mail(.)?/)){
-          mailId = textFields[i].name;
+          mailDom = textFields[i];
         }else if(elementStr.match(/(.+)?user(.+)?id(.)?/)){
-          userId = textFields[i].name;
+          userDom = textFields[i];
         }else if(elementStr.match(/(.+)?name(.+)?/)){
-          nameId = textFields[i].name;
+          nameDom = textFields[i];
         }else if(elementStr.match(/(.+)?login(.+)?/)){
-          loginId = textFields[i].name;
+          loginIdDom = textFields[i];
         }
       }
-      if(mailId){
-        this.loginIdElementName = mailId;
-      }else if(userId){
-        this.loginIdElementName = userId;
-      }else if(nameId){
-        this.loginIdElementName = nameId;
-      }else if(loginId){
-        this.loginIdElementName = loginId;
+      var correctDom;
+      if(mailDom){
+        correctDom = mailDom;
+      }else if(userDom){
+        correctDom = userDom;
+      }else if(nameDom){
+        correctDom = nameDom;
+      }else if(loginIdDom){
+        correctDom = loginIdDom;
       }
+
+      this.loginIdElementName = correctDom.name;
+      this.loginIdElementDom = correctDom;
+
     }
   }
 }

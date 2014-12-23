@@ -3,22 +3,25 @@ document.addEventListener('DOMContentLoaded', function () {
   var client = new popupClient();
   var accountLists = [];
 
-  client.refresh(accountLists, function(accountLists){
-    var accountDoms = document.getElementsByClassName('account');
-    for(var i=0, len=accountDoms.length; i < len; i++){
-      var accountList = new AccountList();
-      var _self = accountDoms[i];
-      accountList.url = _self.querySelector('input.loginUrl').value;
-      accountList.loginId = _self.querySelector('input.loginId').value;
-      accountList.password = _self.querySelector('input.password').value;
-      accountLists.push(accountList);
+  safari.application.addEventListener("command", function (evt) {
+    if (evt.command === "cyshyToolbarItem") {
+      client.refresh(accountLists, function(accountLists){
+        var accountDoms = document.getElementsByClassName('account');
+        for(var i=0, len=accountDoms.length; i < len; i++){
+          var accountList = new AccountList();
+          var _self = accountDoms[i];
+          accountList.url = _self.querySelector('input.loginUrl').value;
+          accountList.loginId = _self.querySelector('input.loginId').value;
+          accountList.password = _self.querySelector('input.password').value;
+          accountLists.push(accountList);
+        }
+      });
     }
-  });
+  }, true);
 
   document.addEventListener('click', function (e) {
     var className = e.target.className;
     if(className === 'loginBtn'){
-      alert("sss");
       var index = indexByClassName(e.target);
       var account = accountLists[index];
       account.login();
@@ -31,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.addEventListener('click', function (e){
     if(e.target.id === 'storageRefresh'){
-      safari.extension.globalPage.contentWindow.dispatchMessage("storageRefresh");
+      safari.extension.globalPage.contentWindow.changeClientData({ name: "storageRefresh"});
     }
   });
 });

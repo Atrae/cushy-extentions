@@ -72,71 +72,13 @@ saveDialog.prototype = {
     this.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="'+msg+'">';
   },
   submit: function(tempData, submitType){
-    //localへの保存 + サーバへの保存
-    var domain = tempData.domain;
-    var loginElementName = tempData.loginElementName;
-    var loginId = tempData.loginId[0];
-    var passwordElementName = tempData.passwordElementName;
-    var password = tempData.password[0];
-    var url = tempData.url;
-    var groupId = tempData.groupId;
-    var storageData = {};
-    var storageClient = new StorageClient();
-    var accounts = safari.extension.secureSettings.accounts;
-    var accounts = accounts? accounts : [];
-    var accountInfos = (accounts[domain])? accounts[domain] : [];
-    var userInfo = safari.extension.secureSettings.userInfo;
-    if(submitType === 'save'){ //save ver.
-      accountInfos.push({
-        'loginElementName': loginElementName,
-        'loginId': loginId,
-        'passwordElementName': passwordElementName,
-        'password': password,
-        'url': url
-      })
-    }else if(submitType === 'changePassword'){
-      for(var i=0; i < accountInfos.length; i++){
-        if(loginId === accountInfos[i].loginId){
-          accountInfos[i].password = password;
-          accountInfos[i].passwordElementName = passwordElementName;
-          accountInfos[i].url = url;
-        }
-      }
-    }
-    accounts[domain] = accountInfos;
-    storageClient.save(accounts);
+    //サーバへの保存 callbackで受け取るように設定
     var requestType = (submitType === 'changePassword')? 'PUT' : 'POST';
-
-    var request = new XMLHttpRequest();
-    var data = {
-      user_id: userInfo.userId, //認証方法は別途検討
-      login_id: loginId,
-      password: password,
-      url: url,
-      name: domain,
-      group_id: groupId,
-      api_key: userInfo.apiKey,
-      default_flag: (groupId === '')? true : false
-    }
-    request.open(requestType, 'http://localhost:3000/api/v1/accounts', true);
-    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    request.send(EncodeHTMLForm(data));
+    safari.self.tab.dispatchMessage("SubmitSaveDialog", { "tempData": tempData, "requestType": requestType });
     this.close();
   }
 }
 
 function dialogClose(){
   safari.self.tab.dispatchMessage("dialogClose");
-}
-
-
-function EncodeHTMLForm(data){
-  var params = [];
-  for(var name in data){
-    var value = data[name];
-    var param = encodeURIComponent(name).replace(/%20/g, '+')
-      + '=' + encodeURIComponent(value).replace(/%20/g, '+');
-    params.push(param);
-  }
-  return params.join('&');
 }
