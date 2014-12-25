@@ -6,15 +6,28 @@ var dialog = new Dialog();
 //  console.dir(result);
 //});
 
+var elementExist = function (element) {
+  element.getBoundingClientRect().height === 0
+}
+
+var formValid = function (form) {
+  var result = false;
+  if (!form.action.match(/http|https/) || (form.action.match(/http|https/) && form.action.match(location.host))) {
+    result = true;
+  }
+  return result;
+}
+
 var forms = [];
 var formDoms = document.getElementsByTagName('form');
 for (var i=0,len=formDoms.length; i<len; i++) {
   var formDom = formDoms[i];
-  if (formDom.getBoundingClientRect().height === 0) continue;
+  if (elementExist(formDom)) continue;
+  if (!formValid(formDom)) continue;
   var form = new Form(formDom);
   form.setInitValue();
   forms.push(form);
-  console.dir(form);
+  console.log(form);
   if (form.type === "signUp") setRandomPassword(form);
 }
 
