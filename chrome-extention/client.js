@@ -22,7 +22,12 @@ Client.prototype = {
   },
   sendMsg: function(msg, callbackFunc){
     var _msg = (msg)? msg : this.msg;
-    chrome.tabs.sendMessage(this.tabId, _msg, callbackFunc);
+    var _self = this;
+    chrome.storage.local.get(['groups'], function(result){
+      if (_msg.action === "openDialogBox") _msg['groups'] = result['groups'];
+      chrome.tabs.sendMessage(_self.tabId, _msg, callbackFunc);
+    });
+
     this.msg = null;
   },
   checkRegisterDialog: function(tempData){

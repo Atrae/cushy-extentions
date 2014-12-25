@@ -1,13 +1,13 @@
-var saveDialog = function(){
+var Dialog = function(){
   this.message;
   this.select_options = '';
   this.button;
+  this.ngButton;
   this.existFlg = false;
 }
 
-saveDialog.prototype = {
-  insert: function(){
-
+Dialog.prototype = {
+  insert: function() {
     var dialogParent = document.createElement("div");
     dialogParent.id = "cushy-ext-dialog";
     dialogParent.setAttribute("style", "width: 380px; position: fixed; top: 10px; z-index: 99999; background-color: rgba(17, 31, 52, 0.4); border-radius: 4px; right: 10px;box-shadow: 0 0 5px rgba(55,55,55,0.2);");
@@ -42,7 +42,7 @@ saveDialog.prototype = {
     pTagElement.innerHTML = this.message;
     backgroundElement.appendChild(pTagElement);
 
-    if(this.select_options){
+    if (this.select_options) {
       var selectElement = document.createElement("select");
       selectElement.id = "forDialog";
       selectElement.setAttribute("style", "font-size: 16px; padding: 10px; margin: 0 0 5px; width: 100%; height: 2em; border: 2px solid #f9f9f9; background: #fff;");
@@ -52,93 +52,66 @@ saveDialog.prototype = {
 
     var dialogChildElement3 = document.createElement("div");
     dialogChildElement3.className = "cushy-ext-dialog-js";
-    dialogChildElement3.innerHTML = this.button;
+    if (this.button) dialogChildElement3.innerHTML = this.button;
+    if (this.ngButton) dialogChildElement3.innerHTML += this.ngButton;
     backgroundElement.appendChild(dialogChildElement3);
 
     dialogParent2.appendChild(dialogElement);
     dialogParent2.appendChild(backgroundElement);
     dialogParent.appendChild(dialogParent2);
 
-    if(!this.existFlg){
+    if (!this.existFlg) {
       document.body.appendChild(dialogParent);
       this.existFlg = true;
     }
   },
   close: function(){
-    dialogClose();
+    chrome.runtime.sendMessage({action: "dialogClose"}, function(){});
     document.getElementById('cushy-ext-dialog').setAttribute("style", "height: 0px; opacity: 0; display: none;");
   },
-  setSubmitMsg: function(msg){
+  setSubmitMsg: function (msg) {
     this.button = '<input type="submit" class="cushy-ext-submit-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="'+msg+'">';
   },
-  submit: function(tempData, submitType){
+  setNgBtnMsg: function (msg) {
+    this.ngButton = '<input type="button" class="cushy-ext-never-disp-js" style="width: 100%; font-size: 16px; height: 40px; background: #111F34; border-radius: 4px; text-shadow: none; color: #fff; font-weight: bold;" value="'+msg+'">';
+  },
+  submit: function(account, submitType){
     //localへの保存 + サーバへの保存
-    var domain = tempData.domain;
-    var loginElementName = tempData.loginElementName;
-    var loginId = tempData.loginId[0];
-    var passwordElementName = tempData.passwordElementName;
-    var password = tempData.password[0];
-    var url = tempData.url;
-    var groupId = tempData.groupId;
-    var storageData = {};
-    var storageClient = new StorageClient();
-    chrome.storage.local.get(["accounts"], function (result){
-      var accounts = (result["accounts"])? result["accounts"] : [];
-      var accountInfos = (result["accounts"][domain])? result["accounts"][domain] : [];
-      if(submitType === 'save'){ //save ver.
-        accountInfos.push({
-          'loginElementName': loginElementName,
-          'loginId': loginId,
-          'passwordElementName': passwordElementName,
-          'password': password,
-          'url': url
-        })
-      }else if(submitType === 'changePassword'){
-        for(var i=0; i < accountInfos.length; i++){
-          if(loginId === accountInfos[i].loginId){
-            accountInfos[i].password = password;
-            accountInfos[i].passwordElementName = passwordElementName;
-            accountInfos[i].url = url;
-          }
-        }
-      }
-      accounts[domain] = accountInfos;
-      storageClient.save(accounts);
-    });
-
     var requestType = (submitType === 'changePassword')? 'PUT' : 'POST';
-    chrome.storage.local.get(['userInfo'], function(result){
-      var request = new XMLHttpRequest();
-      var data = {
-        user_id: result['userInfo'].userId, //認証方法は別途検討
-        login_id: loginId,
-        password: password,
-        url: url,
-        name: domain,
-        group_id: groupId,
-        api_key: result['userInfo'].apiKey,
-        default_flag: (groupId === '')? true : false
-      }
-      request.open(requestType, 'https://cushy-staging.herokuapp.com/api/v1/accounts', true);
-      request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-      request.send(EncodeHTMLForm(data));
-    });
+    chrome.runtime.sendMessage({ action: "saveAccount", account: account, requestType: requestType });
     this.close();
+  },
+  registerNgUrl: function (url) {
+    chrome.runtime.sendMessage({ action: "registerNgUrl", url: url });
+    this.close();
+  },
+  setForSave: function (account, groups) {
+    this.setSubmitMsg("登録する");
+    this.setNgBtnMsg("never display");
+    this.message = account.domain +"での"+ account.loginId +"のアカウントを登録しますか？";
+    this.select_options += "<option group-id=''>【PRIVATE GROUP】For only me</option>";
+    for (key in groups) {
+      this.select_options += "<option group-id='"+ groups[key][0].id +"'>【"+ groups[key][0].company_name +"】For "+ key +"</option>";
+    }
+    this.insert();
+  },
+  setForChangePw: function (account) {
+    this.setSubmitMsg("変更する");
+    this.message = account.domain +"での"+ account.loginId +"のアカウントのPWを変更しますか？";
+    this.insert();
+  },
+  setForNoLogin: function () {
+    this.message = "現在未ログインのようです。ログインしていただかないとアカウントは登録されません。";
+    this.insert();
+  },
+  setForFill: function (accounts) {
+    for (var i = 0, len = accounts.length; i < len; i++) {
+      this.select_options += "<option login-id='"+ i +"'>"+ accounts[i].loginId +"</option>"
+    }
+  },
+  setForLogin: function () {
+    this.message = "以前登録したアカウントでloginしますか？";
+    this.setSubmitMsg("login");
+    this.insert();
   }
-}
-
-function dialogClose(){
-  chrome.runtime.sendMessage({action: "dialogClose"}, function(){});
-}
-
-
-function EncodeHTMLForm(data){
-  var params = [];
-  for(var name in data){
-    var value = data[name];
-    var param = encodeURIComponent(name).replace(/%20/g, '+')
-      + '=' + encodeURIComponent(value).replace(/%20/g, '+');
-    params.push(param);
-  }
-  return params.join('&');
 }
