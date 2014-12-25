@@ -24,9 +24,7 @@
       "https://*/*"
     ],
     "js": [
-      "storage_client.js",
-      "save_dialog.js",
-      "local_data.js",
+      "dialog.js",
       "form.js",
       "password_generator.js",
       "content_frame.js"
