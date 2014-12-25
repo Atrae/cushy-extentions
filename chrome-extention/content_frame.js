@@ -12,7 +12,7 @@ var elementExist = function (element) {
 
 var formValid = function (form) {
   var result = false;
-  if (!form.action.match(/http|https/) || (form.action.match(/http|https/) && form.action.match(location.host))) {
+  if (typeof(form.action) !== "string" || !form.action.match(/http|https/) || (form.action.match(/http|https/) && form.action.match(location.host))) {
     result = true;
   }
   return result;
@@ -59,7 +59,6 @@ var openDialogBoxFunc = function (account, groups) {
         account.groupId = teamOptions[teamOptions.selectedIndex].getAttribute('group-id');
         dialog.submit(account, 'save');
       } else if (e.target.className ==='cushy-ext-never-disp-js') {
-        // 別途検討
         dialog.registerNgUrl(account.domain);
       }
     });
@@ -168,7 +167,7 @@ document.addEventListener('submit', function (e) {
 });
 
 function setRandomPassword (form) {
-  if (document.querySelector('input[name="'+form.passwordElementName+'"]')) {
+  if (document.querySelector('input[name="'+ form.passwordElementName +'"]')) {
     var passwordGenerator = new PasswordGenerator();
     passwordGenerator.generate();
     var rect = document.querySelector('input[name="'+ form.passwordElementName +'"]').getBoundingClientRect();
