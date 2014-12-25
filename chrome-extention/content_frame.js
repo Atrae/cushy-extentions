@@ -10,6 +10,7 @@ var forms = [];
 var formDoms = document.getElementsByTagName('form');
 for (var i=0,len=formDoms.length; i<len; i++) {
   var formDom = formDoms[i];
+  if (formDom.getBoundingClientRect().height === 0) continue;
   var form = new Form(formDom);
   form.setInitValue();
   forms.push(form);
