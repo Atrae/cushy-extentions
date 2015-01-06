@@ -55,7 +55,7 @@ var messageLogicForAccount = function () {
     var accounts = result["accounts"][domain];
     var ngflg = false;
     chrome.storage.local.get(["ngUrls"], function (result) {
-      var ngUrls = result["ngUrls"];
+      var ngUrls = result["ngUrls"]? result["ngUrls"] : [];
       var len = ngUrls.length;
       for (var i = 0; i < len; i++ ) {
         if (ngUrls[i] === domain) ngflg = true;
