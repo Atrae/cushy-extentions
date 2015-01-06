@@ -1,8 +1,8 @@
 var dialog = new Dialog();
 
-//chrome.storage.local.clear(function(){});
+// chrome.storage.local.clear(function(){});
 
-//chrome.storage.local.get(null, function(result){
+// chrome.storage.local.get(null, function(result){
 //  console.dir(result);
 //});
 
@@ -27,7 +27,6 @@ for (var i=0,len=formDoms.length; i<len; i++) {
   var form = new Form(formDom);
   form.setInitValue();
   forms.push(form);
-  console.log(form);
   if (form.type === "signUp") setRandomPassword(form);
 }
 

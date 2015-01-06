@@ -57,10 +57,14 @@ var messageLogicForAccount = function () {
     chrome.storage.local.get(["ngUrls"], function (result) {
       var ngUrls = result["ngUrls"]? result["ngUrls"] : [];
       var len = ngUrls.length;
-      for (var i = 0; i < len; i++ ) {
-        if (ngUrls[i] === domain) ngflg = true;
-        if (i === len-1) {
-          (!ngflg)? createMessageForAccount(accounts) : account.clear();
+      if (len === 0) {
+        createMessageForAccount(accounts);
+      } else {
+        for (var i = 0; i < len; i++ ) {
+          if (ngUrls[i] === domain) ngflg = true;
+          if (i === len-1) {
+            (!ngflg)? createMessageForAccount(accounts) : account.clear();
+          }
         }
       }
     });
