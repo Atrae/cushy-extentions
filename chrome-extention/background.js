@@ -177,7 +177,7 @@ var saveAccount = function(request,sender,sendResponse) {
         api_key: result['userInfo'].apiKey,
         default_flag: (groupId === '')? true : false
       }
-      request.open(requestType, 'https://cushy-staging.herokuapp.com/api/v1/accounts', true);
+      request.open(requestType, 'https://cushy.herokuapp.com/api/v1/accounts', true);
       request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
       request.send(EncodeHTMLForm(data));
     });

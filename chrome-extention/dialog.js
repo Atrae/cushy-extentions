@@ -1,4 +1,4 @@
-var Dialog = function(){
+var Dialog = function() {
   this.message;
   this.select_options = '';
   this.button;

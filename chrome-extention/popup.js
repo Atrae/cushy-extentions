@@ -57,6 +57,3 @@ function indexByClassName(element) {
   }
   return -1;
 }
-
-function updateAccountLists(accountLists){
-}
